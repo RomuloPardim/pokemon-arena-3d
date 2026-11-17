@@ -2,6 +2,8 @@
 
 Jogo de luta 3D em arena com Pokémon, inspirado em jogos de luta de anime. Feito em **HTML, CSS e JavaScript puro** com [three.js](https://threejs.org), roda direto no navegador do PC e do celular, sem instalar nada.
 
+Link para jogar: https://romulopardim.github.io/pokemon-arena-3d/
+
 > Projeto pessoal de estudo, **sem fins comerciais** e não afiliado à Nintendo, Game Freak ou The Pokémon Company. Veja [Créditos e aviso legal](#créditos-e-aviso-legal).
 
 <!-- Dica: coloque aqui um print ou GIF do jogo, por exemplo: ![Pokémon Arena 3D](docs/screenshot.png) -->
