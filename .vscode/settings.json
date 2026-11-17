@@ -1,0 +1,5 @@
+{
+  "files.exclude": { "**/__pycache__": true },
+  "search.exclude": { "jogo-3d/modelos/**": true, "jogo-3d/js/lib/**": true, "jogo-2d/js/05-sprites-pmd.js": true, "jogo-2d-arquivo-unico/**": true },
+  "editor.wordWrap": "on"
+}

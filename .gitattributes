@@ -1,0 +1,4 @@
+# modelos embutidos (.js gigantes em base64) não poluem as estatísticas de linguagem nem os diffs
+modelos/*.js linguist-generated=true -diff
+js/lib/*.js linguist-vendored=true
+jogo-2d-arquivo-unico/*.html linguist-generated=true

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Pokémon Arena — Real Time</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rubik:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+
+<!-- HOME -->
+<section id="home" class="screen">
+  <div class="logo">POKÉMON ARENA<small>REAL TIME</small></div>
+  <div class="wrap">
+    <button class="bigbtn b-yel" id="btnTeam"><span>⚑ MONTAR EQUIPE</span><span id="teamCount">0/6</span></button>
+    <button class="bigbtn b-grn" id="btnPlay"><span>▶ INICIAR BATALHA</span><span>›</span></button>
+    <div class="panel">
+      <div class="lbl">SUA EQUIPE</div>
+      <div class="slots" id="homeSlots"></div>
+    </div>
+    <div class="row">
+      <div class="panel"><div class="lbl">TAMANHO DO TIME</div>
+        <div class="seg" id="segSize"><button data-v="3">3 x 3</button><button data-v="6">6 x 6</button></div></div>
+      <div class="panel"><div class="lbl">DIFICULDADE</div>
+        <div class="seg" id="segDiff"><button data-v="easy">Fácil</button><button data-v="normal">Normal</button><button data-v="hard">Difícil</button></div></div>
+    </div>
+    <div class="panel"><div class="lbl">MAPA</div><div class="maps" id="mapList"></div></div>
+    <div class="row">
+      <div class="panel"><div class="lbl">EFEITOS SONOROS</div>
+        <div class="seg" id="segSom"><button data-v="1">Ligado</button><button data-v="0">Desligado</button></div></div>
+      <div class="panel"><div class="lbl">MÚSICA</div>
+        <div class="seg" id="segMus"><button data-v="1">Ligada</button><button data-v="0">Desligada</button></div></div>
+    </div>
+    <div class="row">
+      <div class="panel"><div class="lbl">EFEITOS VISUAIS</div>
+        <div class="seg" id="segFx"><button data-v="completo">Completo</button><button data-v="leve">Leve</button></div></div>
+    </div>
+    <div class="panel" id="aimPanel"><div class="lbl">MIRA (PC)</div>
+      <div class="seg" id="segAim"><button data-v="mouse">Mouse</button><button data-v="auto">Automática</button></div></div>
+    <p class="hint" id="ctrlHint"></p>
+  </div>
+  <p class="credits">Projeto de estudo, sem fins comerciais. Pokémon © Nintendo / Game Freak / The Pokémon Company.<br>
+  Sprites: PokeAPI, Pokémon Showdown (menus) e PMD Sprite Collab (batalha, 8 direções, CC BY-NC 4.0).</p>
+</section>
+
+<!-- BUILDER -->
+<section id="builder" class="screen hidden">
+  <div class="bhead">
+    <button class="smbtn" id="bBack">‹ Voltar</button>
+    <h2>ESCOLHER POKÉMON <span id="bCount"></span></h2>
+    <button class="smbtn" id="bRand">🎲 Aleatório</button>
+    <button class="smbtn" id="bClear">Limpar</button>
+    <button class="smbtn go" id="bGo">Batalhar ▶</button>
+  </div>
+  <div class="row" style="align-items:center"><input class="search" id="bSearch" placeholder="Buscar nome ou nº..."></div>
+  <div class="chips" id="bChips"></div>
+  <div class="grid" id="bGrid"></div>
+</section>
+
+<!-- BATTLE -->
+<section id="battle" class="screen hidden">
+  <canvas id="cv"></canvas>
+  <div id="joy"><div id="joyB"><div id="joyK"></div></div></div>
+  <div class="hudtop">
+    <div class="team l" id="hudL"></div>
+    <div class="timer" id="timer" title="Pausar">3:00</div>
+    <div class="team r" id="hudR"></div>
+  </div>
+  <div class="help">WASD: mover • Mouse: mirar • Clique/1-4: golpes • Espaço: pular • Q: Ultimate • Retrato: trocar</div>
+  <div class="moves" id="moves"></div>
+  <button class="jb" id="jumpBtn">⤴ PULO<span class="key">ESPAÇO</span><div class="cd"></div></button>
+  <button id="ultBtn"><div class="fill"></div><span class="lbl2">★ ULTIMATE</span><span class="nm"></span><span class="key">Q</span></button>
+  <div id="banner"></div>
+  <div id="buffs"></div>
+  <div id="vs" class="hidden"></div>
+</section>
+
+<div id="modal" class="hidden"><div class="mbox" id="mbox"></div></div>
+
+<script src="js/01-dados.js"></script>
+<script src="js/02-mapas-motor.js"></script>
+<script src="js/03-mapas.js"></script>
+<script src="js/04-obstaculos.js"></script>
+<script src="js/05-sprites-pmd.js"></script>
+<script src="js/06-utilidades.js"></script>
+<script src="js/07-menu.js"></script>
+<script src="js/08-controles.js"></script>
+<script src="js/09-som.js"></script>
+<script src="js/10-batalha-criacao.js"></script>
+<script src="js/11-efeitos.js"></script>
+<script src="js/12-batalha-logica.js"></script>
+<script src="js/13-ambiente.js"></script>
+<script src="js/14-desenho-e-loop.js"></script>
+</body>
+</html>

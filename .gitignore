@@ -1,0 +1,6 @@
+# arquivos que não vão para o GitHub
+*.zip
+node_modules/
+__pycache__/
+.DS_Store
+Thumbs.db

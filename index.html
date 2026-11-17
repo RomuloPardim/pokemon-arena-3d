@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Pokémon Arena V10 — Desktop + Mobile</title>
+<meta name="theme-color" content="#090f21">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rubik:wght@400;600;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+<div id="palco"></div>
+<div id="indicadorFps" aria-label="Desempenho em quadros por segundo" class="hidden">-- FPS</div>
+<div id="numeros"></div>
+<div id="linhasVelocidade"></div>
+<div id="barraCineCima"></div><div id="barraCineBaixo"></div>
+
+<!-- ===== TELA INICIAL ===== -->
+<section id="telaInicio" class="tela">
+  <div class="logo"><h1>POKÉMON ARENA</h1><h2>V10 · DESKTOP + MOBILE</h2></div>
+  <div id="modos"></div>
+  <div class="rodape">
+    <button id="btnConfig" class="sec nav">⚙ Configurações</button>
+    <button id="btnControles" class="sec nav">🎮 Controles</button>
+  </div>
+  <p id="statusControles"></p>
+  <p class="creditos">Projeto de estudo, sem fins comerciais. Pokémon © Nintendo / Game Freak / The Pokémon Company.
+    Modelos 3D: Pokemon-3D (Sudhanshu Ambastha) • Efeitos: Pokémon Showdown • Ícones: PokeAPI • Motor: three.js</p>
+</section>
+
+<!-- ===== SELEÇÃO DE PERSONAGENS (J1 e J2 ao mesmo tempo) ===== -->
+<section id="telaSelecao" class="tela hidden" data-nav-propria="1">
+  <header><button class="sec" data-voltar="telaInicio">‹ Voltar</button><h2 id="selTitulo"></h2><div class="seg" id="selTamanho"></div></header>
+  <div class="selCorpo">
+    <div id="selJ0" class="selPainel"></div>
+    <div id="selGrade"></div>
+    <div id="selJ1" class="selPainel"></div>
+  </div>
+  <footer><div id="selArenas"></div><button id="btnComecar" class="pri">▶ COMEÇAR</button></footer>
+</section>
+
+<!-- ===== TORNEIO ===== -->
+<section id="telaTorneio" class="tela hidden">
+  <header><button class="sec nav" data-voltar="telaInicio">‹ Menu</button><h2>Torneio Local</h2></header>
+  <div id="torneioConfig" class="caixaMenu">
+    <div class="campo"><label>PARTICIPANTES</label><div class="seg" id="segTorQtd"><button data-v="4">4</button><button data-v="8">8</button></div></div>
+    <div class="campo"><label>JOGADORES HUMANOS</label><div class="seg" id="segTorHum"><button data-v="1">1</button><button data-v="2">2</button></div></div>
+    <p class="dica">As outras vagas ficam com CPUs de equipes sorteadas. Lutas entre duas CPUs são simuladas.</p>
+    <button id="btnTorneioEquipes" class="pri nav">Escolher equipes ›</button>
+  </div>
+  <div id="chave"></div>
+  <button id="btnProximaLuta" class="pri nav hidden">Próxima luta</button>
+</section>
+
+<!-- ===== CONFIGURAÇÕES ===== -->
+<section id="telaConfig" class="tela hidden">
+  <header><button class="sec nav" data-voltar="telaInicio">‹ Voltar</button><h2>Configurações</h2></header>
+  <div class="caixaMenu">
+    <div class="campo"><label>QUALIDADE GRÁFICA · desktop e celular</label><div class="seg" id="segQual"><button data-v="auto">Automática (recomendada)</button><button data-v="baixa">Baixa</button><button data-v="media">Média</button><button data-v="alta">Alta (brilho)</button></div></div>
+    <div class="campo"><label>MOSTRAR FPS (PARA TESTAR)</label><div class="seg" id="segFps"><button data-v="true">Mostrar</button><button data-v="false">Ocultar</button></div></div>
+    <div class="campo"><label>ANIMAÇÃO DAS ULTIMATES</label><div class="seg" id="segUlt"><button data-v="completa">Completa</button><button data-v="rapida">Acelerada</button><button data-v="curta">Curta quando repetir</button></div></div>
+    <div class="campo"><label>TEMPO POR RODADA</label><div class="seg" id="segTempo"><button data-v="0">Sem limite</button><button data-v="99">99 s</button><button data-v="180">180 s</button></div></div>
+    <div class="campo"><label>DIFICULDADE DA CPU</label><div class="seg" id="segDif"><button data-v="facil">Fácil</button><button data-v="normal">Normal</button><button data-v="dificil">Difícil</button></div></div>
+    <div class="campo"><label>VIBRAÇÃO DOS CONTROLES</label><div class="seg" id="segVib"><button data-v="true">Ligada</button><button data-v="false">Desligada</button></div></div>
+    <div class="campo"><label>SONS</label><div class="seg" id="segSom"><button data-v="true">Ligados</button><button data-v="false">Desligados</button></div></div>
+    <div class="campo"><label>MÚSICA</label><div class="seg" id="segMus"><button data-v="true">Ligada</button><button data-v="false">Desligada</button></div></div>
+    <div class="campo"><label>J2 NO TECLADO (Batalha Aleatória sem 2º controle)</label><div class="seg" id="segP2"><button data-v="true">Sim</button><button data-v="false">Não (CPU)</button></div></div>
+  </div>
+</section>
+
+<!-- ===== CONTROLES (remapear) ===== -->
+<section id="telaControles" class="tela hidden">
+  <header><button class="sec nav" data-voltar="telaInicio">‹ Voltar</button><h2>Controles</h2><div id="ctrlAbas" class="seg"></div></header>
+  <div class="caixaMenu largo">
+    <p id="ctrlPad" class="dica"></p>
+    <table id="ctrlTabela"></table>
+    <button id="btnCtrlPadrao" class="sec nav">Restaurar padrão deste jogador</button>
+    <p class="dica">Clique na tecla ou no botão e aperte o novo. Fica salvo neste navegador.</p>
+  </div>
+</section>
+
+<!-- ===== CARREGANDO ===== -->
+<div id="carregando" class="hidden"><div class="caixa"><p>Carregando…</p><div class="barra"><i></i></div></div></div>
+
+<!-- ===== HUD DA BATALHA ===== -->
+<section id="hud" class="hidden">
+  <div id="pj0" class="painelJ"></div>
+  <div id="pj1" class="painelJ dir"></div>
+  <div id="centroHud"><div id="relogio">99</div><div id="rodadas"></div></div>
+  <div id="combo0" class="comboTxt"></div><div id="combo1" class="comboTxt dir"></div>
+  <div id="aviso0" class="aviso"></div><div id="aviso1" class="aviso dir"></div>
+  <div id="banner"></div>
+  <div id="golpesJ0" class="golpesJ"></div><div id="golpesJ1" class="golpesJ dir"></div>
+  <div id="toque">
+    <button data-acao="ataque" class="t-ataque" aria-label="Ataque comum">ATAQUE</button>
+    <button data-acao="pulo" class="t-pulo">⤒</button>
+    <button data-acao="esquiva" class="t-esquiva">»</button>
+    <button data-acao="guarda" class="t-guarda">⛨</button>
+    <button data-acao="golpe0" class="t-g t-g0"></button><button data-acao="golpe1" class="t-g t-g1"></button>
+    <button data-acao="golpe2" class="t-g t-g2"></button><button data-acao="golpe3" class="t-g t-g3"></button>
+    <button data-acao="ult" class="t-ult">★</button>
+    <button data-acao="assist0" class="t-as t-as0">A1</button><button data-acao="assist1" class="t-as t-as1">A2</button>
+    <button data-acao="trocar" class="t-troca">⇄</button>
+    <button data-acao="pausa" class="t-pausa">II</button>
+  </div>
+  <div id="joyZona" aria-label="Controle de movimento"><div id="joy"><div id="joyPino"></div></div><span class="joyLegenda">MOVER</span></div>
+  <div id="avisoGirar">↻ Melhor experiência: vire o celular na horizontal.</div>
+  <div id="treinoPainel" class="hidden">
+    <b>Treinamento</b>
+    <label>Boneco <select id="treinoComp"><option value="parado">Parado</option><option value="andar">Andando</option><option value="pular">Pulando</option><option value="guarda">Defendendo</option><option value="esquiva">Esquivando</option><option value="ia">Lutando (IA)</option></select></label>
+    <label><input type="checkbox" id="treinoVida" checked> Vida do boneco volta</label>
+    <label><input type="checkbox" id="treinoEnergia"> Ultimate sempre cheia</label>
+    <label><input type="checkbox" id="treinoRecarga"> Sem recarga</label>
+    <button id="treinoRepos" class="sec">Reposicionar</button>
+  </div>
+</section>
+
+<div id="pausa" class="tela hidden"><div class="caixa"><h2>PAUSA</h2>
+  <button id="btnContinuar" class="pri nav">Continuar</button><button id="btnSairPausa" class="sec nav">Sair para o menu</button>
+  <p class="dica">Combo: Ataque várias vezes • Segurar Ataque: golpe carregado • Esquiva sem direção: perseguir • Guarda logo antes do golpe: contra-ataque • Guarda quando apanha: substituição • Pular no chão: levantar rápido</p></div></div>
+<div id="resultado" class="tela hidden"><div class="caixa"><h2></h2><p></p><div class="estat"></div>
+  <button id="btnContinuarTorneio" class="pri nav hidden">Voltar à chave</button>
+  <button id="btnRevanche" class="pri nav">Revanche</button><button id="btnMenu" class="sec nav">Menu</button></div></div>
+
+<!-- ===== SCRIPTS (a ordem importa) ===== -->
+<script src="js/lib/three-r149-bundle.js"></script>
+<script src="js/dados.js"></script>
+<script src="js/modelos.js"></script>
+<!-- Os 35 modelos são carregados sob demanda, somente quando necessários -->
+<script src="js/catalogo-modelos.js"></script>
+<!-- jogo -->
+<script src="js/sprites-efeitos.js"></script>
+<script src="js/arena.js"></script>
+<script src="js/mapas.js"></script>
+<script src="js/posfx.js"></script>
+<script src="js/efeitos.js"></script>
+<script src="js/entrada.js"></script>
+<script src="js/batalha.js"></script>
+<script src="js/combate.js"></script>
+<script src="js/golpes-especiais.js"></script>
+<script src="js/ultimates.js"></script>
+<script src="js/ia.js"></script>
+<script src="js/camera.js"></script>
+<script src="js/hud.js"></script>
+<script src="js/modos.js"></script>
+<script src="js/menus.js"></script>
+<script src="js/main.js"></script>
+<script src="js/mobile.js"></script>
+</body>
+</html>
