@@ -23,7 +23,8 @@ function montarHUD(){
         <div class="linha2">
           <div class="energia" title="Ultimate"><i></i><span>ULT</span></div>
           <div class="guarda" title="Guarda"><i></i></div>
-          <div class="subs" title="Substituições">${'<b></b>'.repeat(COMBATE.subsMax)}</div>
+          <div class="subs" title="Substituições">
+                    <div class="megaIcone" title="Mega Evolução">M</div>${'<b></b>'.repeat(COMBATE.subsMax)}</div>
         </div>
         <div class="equipe"></div>
       </div>`;
@@ -74,6 +75,10 @@ function atualizarHUD(dt){
   for (const t of [0, 1]) {
     const L = lutador(t), el = $('#pj' + t); if (!L || !el) continue;
     const f = Math.max(0, L.hp/L.hpMax);
+    const mg = el.querySelector('.megaIcone');
+    mg.classList.toggle('some', !MEGAS[L.p.id] && !L.mega);
+    mg.classList.toggle('pronta', podeMegaEvoluir(L) === true);
+    mg.classList.toggle('ativa', !!L.mega);
     const atual = el.querySelector('.vida .atual'), atraso = el.querySelector('.vida .atraso');
     atual.style.width = (f*100) + '%';
     atual.style.background = f > .5 ? 'linear-gradient(90deg,#3ddc84,#8af0a8)' : f > .2 ? 'linear-gradient(90deg,#ffc93a,#ffe08a)' : 'linear-gradient(90deg,#ff4a5a,#ff8a8a)';

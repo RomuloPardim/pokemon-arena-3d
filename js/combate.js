@@ -24,6 +24,7 @@ const _v3 = () => new THREE.Vector3();
 function controlarLutador(L, E, dt, yawCam){
   if (!L || !L.emCampo || L.assistindo) return;
   if (!L.vivo || L.surgir < 1 || JOGO.fim) { mover(L, 0, 0, dt); return; }
+  if (L.megaT > 0) { mover(L, 0, 0, dt); return; }        // Mega Evoluindo: não anda nem ataca
   const A = inimigoDe(L);
   // direção pedida: jogadores = relativo à câmera; IA = já vem no mundo
   let mx, mz;
@@ -88,6 +89,7 @@ function controlarLutador(L, E, dt, yawCam){
   if (d.has('assist0')) chamarAssist(L, 0);
   if (d.has('assist1')) chamarAssist(L, 1);
   if (d.has('trocar')) trocarProximo(L.time);
+  if (d.has('mega')) megaEvoluir(L);
 
   // ----- andar (o combo controla o corpo sozinho) -----
   if (L.combo || L.perseguir) mover(L, 0, 0, dt);

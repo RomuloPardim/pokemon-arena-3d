@@ -5,19 +5,19 @@
      { x, y (analógico, -1..1), agora: Set (segurando), disparou: Set (apertou agora), solto: Set (soltou agora) }
    A IA monta exatamente o mesmo objeto (ia.js) — por isso tudo que vale para o jogador vale para a IA.
    ========================================================= */
-const ACOES = ['ataque','pulo','esquiva','guarda','golpe0','golpe1','golpe2','golpe3','ult','assist0','assist1','trocar','pausa'];
+const ACOES = ['ataque','pulo','esquiva','guarda','golpe0','golpe1','golpe2','golpe3','ult','assist0','assist1','trocar','mega','pausa'];
 const NOME_ACAO = { ataque:'Ataque (combo)', pulo:'Pular', esquiva:'Esquiva / Perseguir', guarda:'Guarda / Substituição',
-  golpe0:'Golpe 1', golpe1:'Golpe 2', golpe2:'Golpe 3', golpe3:'Golpe 4', ult:'Ultimate', assist0:'Assistência 1', assist1:'Assistência 2', trocar:'Trocar Pokémon', pausa:'Pausa' };
+  golpe0:'Golpe 1', golpe1:'Golpe 2', golpe2:'Golpe 3', golpe3:'Golpe 4', ult:'Ultimate', assist0:'Assistência 1', assist1:'Assistência 2', trocar:'Trocar Pokémon', mega:'Mega Evolução', pausa:'Pausa' };
 
 // Teclado: códigos de tecla (e.code), funcionam em qualquer layout (ABNT, US...)
 const TECLADO_PADRAO = [
   { cima:'KeyW', baixo:'KeyS', esq:'KeyA', dir:'KeyD', ataque:'KeyJ', pulo:'Space', esquiva:'KeyK', guarda:'KeyL',
-    golpe0:'KeyU', golpe1:'KeyI', golpe2:'KeyO', golpe3:'KeyP', ult:'KeyY', assist0:'KeyQ', assist1:'KeyE', trocar:'KeyR', pausa:'Escape' },
+    golpe0:'KeyU', golpe1:'KeyI', golpe2:'KeyO', golpe3:'KeyP', ult:'KeyY', assist0:'KeyQ', assist1:'KeyE', trocar:'KeyR', mega:'KeyG', pausa:'Escape' },
   { cima:'ArrowUp', baixo:'ArrowDown', esq:'ArrowLeft', dir:'ArrowRight', ataque:'Numpad1', pulo:'Numpad0', esquiva:'Numpad2', guarda:'Numpad3',
-    golpe0:'Numpad4', golpe1:'Numpad5', golpe2:'Numpad6', golpe3:'NumpadAdd', ult:'Numpad8', assist0:'Numpad7', assist1:'Numpad9', trocar:'NumpadEnter', pausa:'Backspace' },
+    golpe0:'Numpad4', golpe1:'Numpad5', golpe2:'Numpad6', golpe3:'NumpadAdd', ult:'Numpad8', assist0:'Numpad7', assist1:'Numpad9', trocar:'NumpadEnter', mega:'NumpadMultiply', pausa:'Backspace' },
 ];
 // Controle (padrão Xbox / PlayStation): número do botão
-const CONTROLE_PADRAO = { ataque:2, pulo:0, esquiva:1, guarda:5, golpe0:3, golpe1:4, golpe2:7, golpe3:6, ult:12, assist0:14, assist1:15, trocar:13, pausa:9 };
+const CONTROLE_PADRAO = { ataque:2, pulo:0, esquiva:1, guarda:5, golpe0:3, golpe1:4, golpe2:7, golpe3:6, ult:12, assist0:14, assist1:15, trocar:13, mega:10, pausa:9 };
 const NOME_BOTAO = ['A','B','X','Y','LB','RB','LT','RT','Select','Start','L3','R3','↑','↓','←','→'];
 const NOME_BOTAO_PS = ['✕','◯','▢','△','L1','R1','L2','R2','Share','Options','L3','R3','↑','↓','←','→'];
 

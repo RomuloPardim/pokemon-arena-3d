@@ -32,7 +32,7 @@ async function carregarLuta(P){
     }
     limparVitrine(); limparEfeitos();
     criarArena(P.mapa);
-    Object.assign(JOGO, { times, ativo: [0, 0], projeteis: [], agenda: [], tempo: 0, trocaCd: [0, 0], cineAtiva: null, fim: false, pausado: false,
+    Object.assign(JOGO, { times, ativo: [0, 0], projeteis: [], agenda: [], tempo: 0, trocaCd: [0, 0], megas: [0, 0], cineAtiva: null, fim: false, pausado: false,
       controle: P.controle.slice(), jogadorDoTime: P.jogadorDoTime.slice(), nomes: P.nomes || null, difId: S.dif, dif: DIFICULDADE[S.dif],
       estat: [novaEstat(), novaEstat()], ultsVistas: new Set(), intro: 0,
       treino: { comportamento: 'parado', vidaInfinita: true, energiaInf: false, semRecarga: false, invencivel: false } });

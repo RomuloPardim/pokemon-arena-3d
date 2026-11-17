@@ -633,7 +633,8 @@ function trocarPara(t, i){
 function atualizarLutador(L, dt){
   for (let i = 0; i < 4; i++) L.cds[i] = Math.max(0, L.cds[i] - dt);
   L.esqCd = Math.max(0, L.esqCd - dt); L.inv = Math.max(0, L.inv - dt); L.buffT = Math.max(0, L.buffT - dt); L.danoT = Math.max(0, L.danoT - dt);
-  if (L.surgir < 1) { L.surgir = Math.min(1, L.surgir + dt*3.5); L.inst.raiz.scale.setScalar(.01 + L.surgir*.99); }
+  if (L.surgir < 1) { L.surgir = Math.min(1, L.surgir + dt*3.5);
+  atualizarMega(L, dt); L.inst.raiz.scale.setScalar(.01 + L.surgir*.99); }
   atualizarCombate(L, dt);
   if (L.ataque) { L.ataque.t += dt/L.ataque.dur; if (L.ataque.t >= 1) L.ataque = null; }
   if (L.desmaio) L.desmaio = Math.min(1, L.desmaio + dt*1.5);

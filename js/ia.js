@@ -84,6 +84,7 @@ function entradaIA(L, dt, comportamento){
   if (L.noAr && A.lancado && dist < 3) { if (ai.apertar <= 0) { aperta('ataque'); ai.apertar = .2; } return E; }
   solta('ataque');
   // Ultimate
+  if (podeMegaEvoluir(L) === true && dist > 4 && Math.random() < dt*.7) { aperta('mega'); return E; }   // Mega quando está a uma distância segura
   if (L.en >= 100 && dist < 10 && Math.random() < dt*1.5) { aperta('ult'); return E; }
   // contra-ataque depois de bloquear/esquivar
   if (L.contraT > 0 && dist < 3.5) { aperta('ataque'); return E; }
