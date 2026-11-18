@@ -347,27 +347,28 @@ function anguloNaTela(pos, vel){
 function visualProjetil(g, raio){
   const e = estilo(g.tipo), v = g.visual || VISUAL_PROJETIL[g.tipo] || 'orbe', grupo = new THREE.Group(), partes = [];
   const add = (s, o = {}) => { grupo.add(s); partes.push(Object.assign({ s, giro: 0, orbita: 0, fase: 0, orienta: null }, o)); return s; };
+  // V13: núcleo de energia feito por shader (fogo que ferve, plasma, água, fumaça...) no lugar da "bola colorida"
+  const nucleo = k => { const m = nucleoEnergia(g.tipo, Math.max(.32, raio*1.12)*k); grupo.add(m); partes.push({ s: m, nucleo: true }); return m; };
   const halo = add(spriteFx('brilho', e.c1, raio*4.4, false), { pulsa: .55 });     // auréola colorida (sem somar luz)
-  add(spriteFx('brilho', e.c2, raio*2.2), { pulsa: .35 });                          // um pouco de brilho no centro
+  const miolo = add(spriteFx('brilho', e.c2, raio*2.2), { pulsa: .35 });           // um pouco de brilho no centro
   switch (v) {
-    case 'folhas': for (let k = 0; k < 3; k++) add(spriteFx(k % 2 ? 'leaf1' : 'leaf2', 0xffffff, raio*2.2, false), { orbita: raio*1.1, fase: k*2.09, giro: 9 }); break;
-    case 'estrelas': for (let k = 0; k < 3; k++) add(spriteFx('estrela', 0xffd84a, raio*2.2, false), { orbita: raio, fase: k*2.09, giro: 6 }); break;
+    case 'folhas': nucleo(.6); for (let k = 0; k < 3; k++) add(spriteFx(k % 2 ? 'leaf1' : 'leaf2', 0xffffff, raio*2.2, false), { orbita: raio*1.1, fase: k*2.09, giro: 9 }); break;
+    case 'estrelas': nucleo(.5); for (let k = 0; k < 3; k++) add(spriteFx('estrela', 0xffd84a, raio*2.2, false), { orbita: raio, fase: k*2.09, giro: 6 }); break;
     case 'pedra': add(spriteFx(escolher(['rock1','rock2','rock3']), 0xffffff, raio*3.2, false), { giro: 6 }); break;
     case 'shuriken': add(spriteFx('shuriken', e.c1, raio*3.6, false), { giro: 25 }); add(spriteFx('shuriken', e.c2, raio*2.2, false), { giro: 25 }); break;
     case 'punho': add(spriteFx('fist', 0xffffff, raio*3.2, false), { orienta: Math.PI }); break;
     case 'corte': add(spriteFx('corte', e.c1, raio*4.4, false), { orienta: -Math.PI/2 }); add(spriteFx('corte', e.c2, raio*3), { orienta: -Math.PI/2 }); break;
-    case 'gelo': add(spriteFx('icicle', 0xffffff, raio*3.2, false), { orienta: -Math.PI/4 }); add(spriteFx('estilhaco', e.c1, raio*2.5), { orienta: -Math.PI/2 }); break;
+    case 'gelo': nucleo(.75); add(spriteFx('icicle', 0xffffff, raio*3.2, false), { orienta: -Math.PI/4 }); add(spriteFx('estilhaco', e.c1, raio*2.5), { orienta: -Math.PI/2 }); break;
     case 'agulhas': for (let k = 0; k < 3; k++) add(spriteFx('estilhaco', e.c1, raio*2), { orbita: raio*.7, fase: k*2.09, orienta: -Math.PI/2 }); break;
     case 'osso': add(spriteFx('bone', 0xffffff, raio*3, false), { giro: 14 }); break;
     case 'rocha3d': {
       const m = new THREE.Mesh(GEO_ROCHA, new THREE.MeshStandardMaterial({ color: COR_ROCHA[g.tipo] || 0x8a7350, roughness: .95, flatShading: true }));
       m.scale.setScalar(raio*1.3); m.castShadow = true; grupo.add(m); partes.push({ s: m, malha: true });
       grupo.children[0].material.opacity = .25; break; }
-    case 'lua': add(spriteFx('moon', 0xffffff, raio*2.8), { giro: 2 }); break;
+    case 'lua': nucleo(.6); add(spriteFx('moon', 0xffffff, raio*2.8), { giro: 2 }); break;
     default: {
-      const orb = e.orbe, colorido = SPRITES_COLORIDOS.has(orb);
-      add(spriteFx(orb, e.c1, raio*(colorido ? 3.4 : 2.8), false), { giro: 3 });
-      add(spriteFx('espiral', e.c2, raio*2.4), { giro: -8 });
+      nucleo(1);
+      add(spriteFx('espiral', e.c2, raio*2.6), { giro: -8 });
       // Concentração de energia: símbolo elemental + partículas ao redor em vez de uma esfera lisa.
       if (QUAL.particulas > .5) {
         const selo = ['psychic','ghost','dragon','dark','fairy'].includes(g.tipo) ? 'runa'
@@ -381,13 +382,17 @@ function visualProjetil(g, raio){
       }
     }
   }
+  // com núcleo de shader, o brilho branco do centro fica fraco (senão apaga as cores do núcleo)
+  if (partes.some(pt => pt.nucleo)) { const pm = partes.find(pt => pt.s === miolo); pm.pulsa = .12; }
   return { grupo, partes };
 }
 function criarProjetil(L, g, pos, dir, vel, raio, opcoes = {}){
   if (L && L.mega && !opcoes.ult) raio *= 1.3;      // Mega: projéteis maiores e com brilho
   const vis = visualProjetil(g, raio);
   vis.grupo.position.copy(pos); cena.add(vis.grupo);
-  JOGO.projeteis.push({ dono: L, g, pos: pos.clone(), vel: dir.clone().multiplyScalar(vel), raio, vida: opcoes.vida || 1.1, mesh: vis.grupo, partes: vis.partes,
+  const fita = QUAL.particulas > .45 ? new FitaVFX(g.tipo, Math.max(.3, raio*(opcoes.ult ? 1.6 : 1.35)), QUAL.particulas > .7 ? 22 : 14) : null;
+  if (fita) fita.empurrar(pos);
+  JOGO.projeteis.push({ fita, dono: L, g, pos: pos.clone(), vel: dir.clone().multiplyScalar(vel), raio, vida: opcoes.vida || 1.1, mesh: vis.grupo, partes: vis.partes,
     mult: opcoes.mult || 1, atravessa: !!opcoes.atravessa, acertados: new Set(), t: 0, ult: !!opcoes.ult, ondas: !!opcoes.ondas, sombra: !!opcoes.sombra, mega: !!(L && L.mega) });
 }
 function atualizarProjeteis(dt){
@@ -402,8 +407,14 @@ function atualizarProjeteis(dt){
     if (P.ondas && Math.random() < .25) flash('anel', estilo(P.g.tipo).c1, P.pos.x, P.pos.y, P.pos.z, 1.6, .25);
     if (P.sombra) for (let k = 0; k < 2; k++) FUMACA.add({ x: P.pos.x + rnd(-.3, .3), y: P.pos.y + rnd(-.3, .3), z: P.pos.z + rnd(-.3, .3), vx: 0, vy: rnd(0, 1), vz: 0, cor: 0x2a1240, tam: .9, vida: .5, cel: 'fumaca0', cresce: 1.2 });
     P.vida -= dt; P.t += dt; P.pos.addScaledVector(P.vel, dt); P.mesh.position.copy(P.pos);
+    if (P.fita) P.fita.empurrar(P.pos);
+    if (P.g.tipo === 'electric' && Math.random() < .55*QUAL.particulas) {      // arcos elétricos saindo da bola
+      const d = new THREE.Vector3(rnd(-1, 1), rnd(-1, 1), rnd(-1, 1)).normalize().multiplyScalar(P.raio*rnd(1.6, 2.6));
+      arcoEletrico(P.pos, P.pos.clone().add(d), .08 + P.raio*.08, .08, P.raio*.4);
+    }
     const ang = anguloNaTela(P.pos, P.vel);
     for (const pt of P.partes) {
+      if (pt.nucleo) { pt.s.rotation.y += 2.4*dt; pt.s.rotation.x += 1.1*dt; pt.s.scale.setScalar(pt.s.scale.x*(1 + Math.sin(P.t*24)*.004)); continue; }
       if (pt.malha) { pt.s.rotation.x += 7*dt; pt.s.rotation.y += 5*dt; continue; }
       if (pt.orbita) { const a = P.t*10 + pt.fase; pt.s.position.set(Math.cos(a)*pt.orbita, Math.sin(a)*pt.orbita*.6, Math.sin(a)*pt.orbita); }
       if (pt.giro) pt.s.material.rotation += pt.giro*dt;
@@ -447,6 +458,8 @@ function atualizarProjeteis(dt){
     }
     if (bateu) {
       explosao(P.g.tipo, P.pos.x, Math.max(.3, P.pos.y), P.pos.z, P.raio*2.6);
+      impactoVFX(P.g.tipo, P.pos.x, Math.max(.3, P.pos.y), P.pos.z, Math.max(.6, P.raio*1.7), P.vel);
+      if (P.fita) { soltarFita(P.fita, .22); P.fita = null; }
       if (QUAL.particulas > .55) {
         flash('anel', e.c2, P.pos.x, P.pos.y, P.pos.z, P.raio*5, .27);
         if (P.raio > .5) flash(['electric','dragon'].includes(P.g.tipo) ? 'raio0' : 'corte', e.c1, P.pos.x, P.pos.y, P.pos.z, P.raio*4, .20);

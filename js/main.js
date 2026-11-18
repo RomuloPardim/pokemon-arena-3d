@@ -54,7 +54,7 @@ async function carregarLuta(P){
 }
 function limparLuta(){
   for (const t of [0, 1]) for (const m of JOGO.times[t]) { tirarDeCampo(m); liberarInstancia(m.inst); }
-  for (const P of JOGO.projeteis) cena.remove(P.mesh);
+  for (const P of JOGO.projeteis) { cena.remove(P.mesh); if (P.fita) P.fita.liberar(); }
   if (JOGO.cineAtiva) { for (const x of JOGO.cineAtiva.extras) cena.remove(x); JOGO.cineAtiva = null; }
   JOGO.times = [[], []]; JOGO.projeteis = []; JOGO.agenda = []; JOGO.fim = false; JOGO.pausado = false;
   CAM.cine = null; document.body.classList.remove('cine', 'velocidade'); ambienteCine(0);

@@ -93,25 +93,95 @@ function medirModelo(obj){
 /* ----- Classificação dos ossos pelo nome -----
    Os modelos usam nomes como "LThigh", "RArm", "Tail3", "left_leg_01", "head_8"... */
 function classificarOsso(nomeOriginal){
-  const n = nomeOriginal.replace(/^\d+[\s_]+/, '').replace(/_\d+$/, '');   // "007_LThigh" / "LThigh_44" -> "LThigh"
+  // "007_LThigh" / "LThigh_44" / "EarR_Armature_8" -> "LThigh" / "EarR"
+  const n = nomeOriginal.replace(/^\d+[\s_]+/, '').replace(/_Armature(_\d+)?$/, '').replace(/_\d+$/, '');
   let lado = 0;
   if (/^(left_|L(?=[A-Z])|L_(?=[A-Za-z]))/.test(n)) lado = -1;
   else if (/^(right_|R(?=[A-Z])|R_(?=[A-Za-z]))/.test(n)) lado = 1;
-  const b = n.replace(/^(left_|right_|L(?=[A-Z])|R(?=[A-Z])|L_(?=[A-Za-z])|R_(?=[A-Za-z]))/, '').toLowerCase();
+  let b = n.replace(/^(left_|right_|L(?=[A-Z])|R(?=[A-Z])|L_(?=[A-Za-z])|R_(?=[A-Za-z]))/, '').toLowerCase();
+  if (!lado) { const m = n.match(/[a-z_](R|L)$/); if (m) { lado = m[1] === 'L' ? -1 : 1; b = b.slice(0, -1).replace(/_$/, ''); } }   // "EarR", "Ear_tipL"
   let parte = null;
   if (/^thigh|^leg_?0?1$|^upperleg/.test(b)) parte = 'coxa';
   else if (/^leg$|^calf$/.test(b) && lado) parte = 'perna';
-  else if (/^arm\d?$|^arm_0?1$|^upperarm/.test(b) && lado) parte = 'braco';
-  else if (/^forearm|^arm_0?2$/.test(b) && lado) parte = 'antebraco';
+  else if (/^arm\d?$|^arm_0?1$|^upperarm|^arma$/.test(b) && lado) parte = 'braco';
+  else if (/^forearm\d?$|^arm_0?2$/.test(b) && lado) parte = 'antebraco';
   else if (/^wing_?0?1$|^wing$|^wing1$/.test(b) && lado) parte = 'asa';
   else if (/^wing_?0?[2-3]$/.test(b) && lado) parte = 'asa2';
   else if (/tail/.test(b)) parte = 'cauda';
   else if (/^head$/.test(b)) parte = 'cabeca';
-  else if (/^neck_?0?1$|^neck1?$/.test(b)) parte = 'pescoco';
-  else if (/^spine_?0?1$|^spine$/.test(b)) parte = 'coluna';
+  else if (/^neck_?0?\d?$/.test(b)) parte = 'pescoco';             // Neck1, Neck2, neck_03 (pescoços longos)
+  else if (/^spine_?0?1$|^spine$|^body$/.test(b)) parte = 'coluna';
   else if (/^ear_?0?1$|^ear$|^ear1$/.test(b) && lado) parte = 'orelha';
+  else if (/^(lower)?jaw_?0?1?$|^lowerjaw\d?$|^mouth$/.test(b)) parte = 'mandibula';     // boca abre nos golpes
+  else if (/^shoulder\d?$/.test(b) && lado) parte = 'ombro';
+  else if (/^foot(sub)?\d?$/.test(b) && lado) parte = 'pe';
+  else if (/^hand(sub)?\d?$/.test(b) && lado) parte = 'mao';
+  else if (/^(finger|toe|index|middle|ring|pinky|thumb)/.test(b)) parte = 'dedo';
+  // pedaços soltos (penas, cabelo, roupa, barbatanas...): balançam com "mola"
+  else if (/^(feeler|hair|cloth|curl|wing_?ex|tongue|ribbon|cape|scarf|fin|whisker|antenna|horn|crest|feather|petal|vine|tentacle|ear|sleeve|skirt|plume|mane|nose|cheek|leaf|flame|fire)/.test(b)) parte = 'apendice';
   const num = +(b.match(/(\d+)$/)?.[1] || 0);
   return { lado, parte, num };
+}
+
+/* ----- Modelos sem esqueleto (ex.: Snorlax): cria um esqueleto simples pela forma do modelo -----
+   Assim o corpo, a cabeça, os braços e as pernas também se mexem. */
+function autoRig(obj){
+  let temOsso = false; obj.traverse(o => { if (o.isBone) temOsso = true; });
+  if (temOsso) return;
+  const malhas = []; obj.traverse(o => { if (o.isMesh && !o.isSkinnedMesh) malhas.push(o); });
+  if (!malhas.length) return;
+  obj.updateMatrixWorld(true);
+  const inv = new THREE.Matrix4().copy(obj.matrixWorld).invert(), rel = new THREE.Matrix4();
+  const caixa = new THREE.Box3(), v = new THREE.Vector3();
+  for (const m of malhas) { rel.multiplyMatrices(inv, m.matrixWorld); const pos = m.geometry.attributes.position;
+    for (let i = 0; i < pos.count; i++) caixa.expandByPoint(v.fromBufferAttribute(pos, i).applyMatrix4(rel)); }
+  const tam = caixa.getSize(new THREE.Vector3()), mn = caixa.min, cx = (mn.x + caixa.max.x)/2, cz = (mn.z + caixa.max.z)/2;
+  const P = (x, y) => new THREE.Vector3(cx + x*tam.x, mn.y + y*tam.y, cz);
+  const def = [['Hips', null, P(0,.3)], ['Spine', 'Hips', P(0,.55)], ['Neck', 'Spine', P(0,.74)], ['Head', 'Neck', P(0,.84)],
+    ['LArm', 'Spine', P(.3,.62)], ['LForeArm', 'LArm', P(.42,.5)], ['RArm', 'Spine', P(-.3,.62)], ['RForeArm', 'RArm', P(-.42,.5)],
+    ['LThigh', 'Hips', P(.2,.2)], ['LLeg', 'LThigh', P(.22,.08)], ['RThigh', 'Hips', P(-.2,.2)], ['RLeg', 'RThigh', P(-.22,.08)]];
+  const ossos = {}, lista = [];
+  for (const [nome, pai, pos] of def) {
+    const o = new THREE.Bone(); o.name = nome; o.userData.pos = pos; o.userData.auto = true; ossos[nome] = o; lista.push(o);
+    if (pai) { ossos[pai].add(o); o.position.copy(pos).sub(ossos[pai].userData.pos); } else { obj.add(o); o.position.copy(pos); }
+  }
+  const idx = Object.fromEntries(lista.map((o, i) => [o.name, i]));
+  const sm = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a)/(b - a))); return t*t*(3 - 2*t); };
+  const esqueleto = new THREE.Skeleton(lista);
+  for (const m of malhas) {
+    rel.multiplyMatrices(inv, m.matrixWorld);
+    const g = m.geometry.clone();
+    for (const nome of ['position', 'normal']) {          // malha compactada (inteiros) -> números normais antes de mexer
+      const a = g.attributes[nome]; if (!a || a.array instanceof Float32Array) continue;
+      const f = new Float32Array(a.count*3); for (let i = 0; i < a.count; i++) { f[i*3] = a.getX(i); f[i*3+1] = a.getY(i); f[i*3+2] = a.getZ(i); }
+      g.setAttribute(nome, new THREE.Float32BufferAttribute(f, 3));
+    }
+    g.applyMatrix4(rel);
+    const pos = g.attributes.position, n = pos.count, si = new Uint16Array(n*4), sw = new Float32Array(n*4);
+    for (let i = 0; i < n; i++) {
+      v.fromBufferAttribute(pos, i);
+      const xr = (v.x - cx)/tam.x, yr = (v.y - mn.y)/tam.y, lado = xr >= 0 ? 'L' : 'R', ax = Math.abs(xr);
+      const pesos = {};
+      const braco = sm(.3, .42, ax)*sm(.36, .46, yr)*(1 - sm(.74, .84, yr));
+      const perna = sm(.3, .14, yr)*sm(.05, .14, ax);
+      const cabeca = sm(.7, .8, yr)*(1 - braco);
+      if (braco > 0) pesos[lado + (ax > .4 ? 'ForeArm' : 'Arm')] = braco;
+      if (perna > 0) pesos[lado + (yr < .12 ? 'Leg' : 'Thigh')] = perna;
+      if (cabeca > 0) pesos.Head = cabeca;
+      const resto = Math.max(0, 1 - braco - perna - cabeca);
+      if (resto > 0) { pesos.Spine = resto*sm(.3, .5, yr); pesos.Hips = resto - pesos.Spine; }
+      const ord = Object.entries(pesos).filter(e => e[1] > .001).sort((a, b) => b[1] - a[1]).slice(0, 4);
+      const tot = ord.reduce((a, e) => a + e[1], 0) || 1;
+      ord.forEach(([k, w], j) => { si[i*4 + j] = idx[k]; sw[i*4 + j] = w/tot; });
+      if (!ord.length) { si[i*4] = idx.Hips; sw[i*4] = 1; }
+    }
+    g.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(si, 4));
+    g.setAttribute('skinWeight', new THREE.Float32BufferAttribute(sw, 4));
+    const s = new THREE.SkinnedMesh(g, m.material); s.name = m.name; s.castShadow = m.castShadow; s.frustumCulled = false;
+    m.parent.remove(m); obj.add(s);
+  }
+  obj.updateMatrixWorld(true);
+  obj.traverse(o => { if (o.isSkinnedMesh) o.bind(esqueleto, o.matrixWorld); });
 }
 
 /* ----- Monta o "rig" procedural: guarda a pose original de cada osso ----- */
@@ -137,11 +207,32 @@ function montarRig(obj, opcoes = {}){
   }
   // braços esticados para os lados (pose em T): abaixa ~65°
   // (aves cujas asas são os "braços" do esqueleto ficam com as asas abertas)
-  if (!opcoes.asasBracos) for (const r of ossos) if (r.parte === 'braco' && r.dir && Math.abs(r.dir.y) < .5 && Math.abs(r.dir.x) > .6)
+  if (!opcoes.asasBracos) for (const r of ossos) if (r.parte === 'braco' && !r.o.userData.auto && r.dir && Math.abs(r.dir.y) < .5 && Math.abs(r.dir.x) > .6)
     r.descanso = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1), -Math.sign(r.dir.x)*1.1);
   // índice da cauda (para a onda passar do começo para a ponta)
   const caudas = ossos.filter(r => r.parte === 'cauda').sort((a,b) => a.num - b.num);
   caudas.forEach((r, i) => r.idx = i);
+  const porOsso = new Map(ossos.map(r => [r.o, r]));
+  const temAsa = ossos.some(r => r.parte === 'asa');
+  // Voadores sem asa no esqueleto (ex.: Zapdos): o "ombro" sem braço embaixo vira a asa
+  if (opcoes.voa && !opcoes.asasBracos && !temAsa) for (const r of ossos) if (r.parte === 'ombro') {
+    let temBraco = false; r.o.traverse(f => { const q = porOsso.get(f); if (q && q !== r && (q.parte === 'braco' || q.parte === 'antebraco')) temBraco = true; });
+    if (!temBraco) r.parte = 'asa';
+  }
+  const asaNoModelo = ossos.some(r => r.parte === 'asa');
+  // mandíbula: para que lado ela abre
+  for (const r of ossos) if (r.parte === 'mandibula') r.sinal = r.dir && r.dir.z < -.3 ? -1 : 1;
+  // pedaços soltos: profundidade na corrente, em que parte do corpo estão presos e se fazem papel de asa
+  for (const r of ossos) if (r.parte === 'apendice') {
+    let prof = 0, p = r.o.parent, ancora = null;
+    while (p && p.isBone) { const q = porOsso.get(p); if (q && q.parte === 'apendice') prof++; else if (q) { ancora = q.parte; break; } p = p.parent; }
+    r.prof = Math.min(prof, 6); r.ancora = ancora; r.fase = Math.random()*6.28;
+    r.noBraco = ['braco', 'antebraco', 'mao', 'dedo', 'asa', 'asa2'].includes(ancora);
+    // penas laterais presas no tronco de quem voa e não tem asa própria (ex.: asas do Charizard, do Hydreigon)
+    r.asaCadeia = !!(opcoes.voa && !opcoes.asasBracos && r.lado && (ancora === 'coluna' || ancora === 'ombro') && !asaNoModelo
+      && (!r.dir || Math.abs(r.dir.x) > .35 || prof > 0));
+    r.vx = 0; r.vz = 0; r.x = 0; r.z = 0;
+  }
   return ossos;
 }
 
@@ -161,13 +252,13 @@ function poseOsso(r, rotX, rotY, rotZ){
 
 /* ----- Animações próprias do modelo (só os online têm) ----- */
 const PADROES_ANIM = {
-  parado:   [/battlewait01_loop/, /defaultwait01_loop/, /wait.*loop/],
+  parado:   [/battlewait01_loop/, /defaultwait01_loop/, /wait.*loop/, /bd_wait00/, /bd_battle/, /idle/i],
   andar:    [/walk01_loop/, /walk/],
-  correr:   [/run01_loop/, /run/],
-  ataque:   [/_attack01$/, /attack01/],
-  distancia:[/rangeattack01$/, /rangeattack/],
+  correr:   [/run01_loop/, /run$/, /bd_run/],
+  ataque:   [/_attack01$/, /attack01/, /bd_attack$/],
+  distancia:[/rangeattack01$/, /rangeattack/, /bd_special/, /bd_throw/],
   dano:     [/damage01$/, /damage/],
-  desmaio:  [/down01_start/, /down/],
+  desmaio:  [/down01_start/, /down/, /bd_fall/],
   pulo:     [/jumpup01_start/, /jump/],
 };
 
@@ -189,9 +280,12 @@ async function criarInstancia(id, progresso, fichaForcada){
     const novos = lista.map(m => { const c = m.clone(); materiais.push(c); return c; });
     o.material = Array.isArray(o.material) ? novos : novos[0];
   });
+  autoRig(obj);                                       // modelo sem esqueleto ganha um simples
   const caixa = medirModelo(obj), tam = caixa.getSize(new THREE.Vector3()), centro = caixa.getCenter(new THREE.Vector3());
   // escalaModelo: corrige modelos cuja medição engana (ex.: Giratina) sem mudar a altura usada no combate
-  const k = dados.altura / Math.max(tam.y, .001) * (dados.escalaModelo || 1);
+  // crescer: aumenta o Pokémon inteiro (visual e colisão) — usado nos que ficavam pequenos demais na tela
+  const altura = dados.altura * (dados.crescer || 1);
+  const k = altura / Math.max(tam.y, .001) * (dados.escalaModelo || 1);
   const ajuste = new THREE.Group(); ajuste.add(obj);
   ajuste.scale.setScalar(k);
   ajuste.position.set(-centro.x*k, -caixa.min.y*k, -centro.z*k);
@@ -200,7 +294,7 @@ async function criarInstancia(id, progresso, fichaForcada){
 
   const inst = {
     id, raiz, corpo, ajuste, obj, materiais,
-    altura: dados.altura,
+    altura,
     raio: THREE.MathUtils.clamp(Math.max(tam.x, tam.z)*k*.32, .35, 1.3),
     fase: Math.random()*6, t: Math.random()*10, flash: 0, corFlash: new THREE.Color(1,1,1),
     mixer: null, acoes: {}, acaoAtual: null,
@@ -211,7 +305,7 @@ async function criarInstancia(id, progresso, fichaForcada){
     const sm = new THREE.MeshBasicMaterial({ map: TEXTURA_SOMBRA_VOO, transparent: true, depthWrite: false, opacity: .26, polygonOffset: true, polygonOffsetFactor: -1 });
     const sombra = new THREE.Mesh(sg, sm);
     sombra.rotation.x = -Math.PI/2; sombra.position.y = .055; sombra.renderOrder = 2;
-    sombra.scale.set(Math.max(1.5, dados.altura*1.25), Math.max(1.5, dados.altura*1.25), 1); raiz.add(sombra); inst.sombraVoo = sombra;
+    sombra.scale.set(Math.max(1.5, altura*1.25), Math.max(1.5, altura*1.25), 1); raiz.add(sombra); inst.sombraVoo = sombra;
   }
   // animações reais?
   if (gltf.animations && gltf.animations.length > 3) {
@@ -359,10 +453,46 @@ function animarInstancia(inst, dt, e){
   } else if (inst.ossos) {
     // Calcula a pose-alvo de cada osso e "persegue" ela com suavização (nada de estalos)
     const passo = f, lado = s => s < 0 ? 0 : Math.PI;
+    // forças para as "molas" (penas, cabelo, roupa): aceleração, inclinação e subida do corpo
+    const dtm = Math.min(dt, .05), idt = 1/Math.max(dtm, 1e-3);
+    const dV = THREE.MathUtils.clamp((inst.velSuave - (inst._vAnt ?? inst.velSuave))*idt, -12, 12); inst._vAnt = inst.velSuave;
+    const dI = THREE.MathUtils.clamp((S.inclX - (inst._iAnt ?? S.inclX))*idt, -12, 12); inst._iAnt = S.inclX;
+    const yC = c.position.y, dY = THREE.MathUtils.clamp((yC - (inst._yAnt ?? yC))*idt/Math.max(.5, A), -8, 8); inst._yAnt = yC;
+    const dG = THREE.MathUtils.clamp(((e.inclinar || 0) - (inst._gAnt ?? (e.inclinar || 0)))*idt, -10, 10); inst._gAnt = e.inclinar || 0;
     for (const r of inst.ossos) {
       const ld = r.lado || 1;
+      if (r.parte === 'apendice') {        // mola amortecida: balança sozinho e "atrasa" quando o corpo mexe
+        const p = r.prof, solto = 1 + p*.35;
+        let ax = Math.sin(t*1.7 + r.fase - p*.7)*(.045 + p*.02), az = Math.sin(t*1.25 + r.fase*1.3 - p*.5)*(.035 + p*.015)*ld;
+        if (vooAtivo && r.asaCadeia) { az = ld*(p ? Math.sin(asaFase - .5 - p*.45)*.16 : .3 + Math.sin(asaFase - .2)*(.5 - inst.velSuave*.1)); ax = -.06; }
+        else if (vooAtivo && r.noBraco && inst.asasBracos) az += ld*Math.sin(asaFase - .9 - p*.4)*.16;
+        if (e.pose && e.pose.asas && r.asaCadeia) az = ld*(p ? .1 : .9);
+        if (e.ataque && (j === 'area' || j === 'chuva')) ax -= atkCurva*.25*solto;
+        r.vx += ((ax - r.x)*70 - r.vx*8.5 - (dV*.09 + dI*.5 + dY*.35)*solto)*dtm;
+        r.vz += ((az - r.z)*70 - r.vz*8.5 + dG*.4*ld*solto)*dtm;
+        r.x = THREE.MathUtils.clamp(r.x + r.vx*dtm, -.9, .9); r.z = THREE.MathUtils.clamp(r.z + r.vz*dtm, -.9, .9);
+        poseOsso(r, r.x, 0, r.z); continue;
+      }
       let x = 0, y = 0, z = 0, rapidez = 14;
       switch (r.parte) {
+        case 'mandibula': {      // boca: respira de leve, abre ao atacar, ao apanhar e ao carregar
+          let ab = .02 + Math.max(0, Math.sin(t*.9 + 1))*.035;
+          if (e.ataque) ab = j === 'combo' ? atkCurva*(e.ataque.membro === 'cabeca' ? .55 : .2)
+            : Math.min(1, t1*4)*(1 - Math.max(0, (t1 - .7)/.3))*(j === 'raio' ? .55 : .42);
+          if (e.dano) ab = Math.max(ab, e.dano*.4);
+          if (e.carga) ab = Math.max(ab, .3*e.carga);
+          if (e.desmaio) ab = .3;
+          x = ab*r.sinal; rapidez = 18; break; }
+        case 'ombro':
+          x = -atkCurva*.12 - vel*Math.sin(passo + lado(ld))*.05; z = e.guarda ? .1*ld : 0; rapidez = 10; break;
+        case 'pe': {             // pé acompanha o passo (fica mais "plantado" no chão)
+          const coxaX = Math.sin(passo + lado(ld))*.55*vel, joelho = Math.max(0, Math.sin(passo + lado(ld) - Math.PI/2))*.75*vel;
+          x = vooAtivo ? .4 + Math.sin(t*2.6 + lado(ld))*.06 : e.noAr ? .35 : -(coxaX + joelho)*.55 + joelho*.4;
+          rapidez = 14; break; }
+        case 'mao':
+          x = -atkCurva*.3 + Math.sin(t*1.3 + ld)*.05 - vel*Math.sin(passo + lado(-ld))*.12; z = e.guarda ? .15*ld : 0; rapidez = 11; break;
+        case 'dedo':
+          x = (vooAtivo || e.noAr ? .32 : 0) + Math.sin(t*1.1 + (r.num || 0)*.7)*.035 + (j === 'combo' ? atkCurva*.4 : 0); rapidez = 9; break;
         case 'coxa': {
           x = (vooAtivo ? -.12 + Math.sin(t*3 + lado(ld))*.075 : Math.sin(passo + lado(ld))*.55*vel);
           if (e.noAr) x = -.55; else if (j === 'area' && t1 > .3 && t1 < .5) x = -.35;

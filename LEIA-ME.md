@@ -1,3 +1,30 @@
+# Pokémon Arena V13 — Animações mais vivas, Pokémon maiores e efeitos novos
+
+## O que mudou na V13
+
+- **Animação revisada um por um (83 Pokémon):** cada modelo foi medido (quanto do corpo fica parado andando e atacando).
+  - Partes que antes ficavam duras agora se mexem: **boca abre** nos golpes e ao apanhar, **pés, mãos, dedos e ombros** acompanham o passo,
+    e **penas, cabelo, roupa, barbatanas e antenas** balançam com "mola" (atrasam quando o Pokémon acelera, pula ou gira).
+  - **Asas que eram estáticas agora batem:** Charizard, Zapdos, Hydreigon (penas presas no tronco), Articuno e Noivern (asas nos braços).
+  - **Snorlax** não tinha esqueleto nenhum: o jogo agora cria um esqueleto simples pela forma do modelo, e ele anda, mexe os braços e a cabeça.
+  - **Grovyle** voltou a usar as animações próprias do modelo (estava em pose de "T").
+  - **Kyogre** fica com as nadadeiras abertas (antes elas viravam "pernas"); **Articuno** com a cauda para trás.
+  - Exemplos de ganho (parte do corpo que ficava parada): Mimikyu 82% → 31%, Palkia 45% → 9%, Zapdos 55% → 31%, Gardevoir 57% → 37%.
+- **Pokémon pequenos maiores (tabela `CRESCER` em `js/dados.js`):** medidos pela área da silhueta, não só pela altura.
+  Articuno (×1,75 — era quase só cauda), Gallade, Mimikyu, Primarina, Hitmonchan, Mewtwo, Xerneas, Noivern, Grovyle, Mew, Gardevoir,
+  Ampharos, Umbreon, Absol, Greninja, Lucario, Weavile, Sylveon, Scyther, Pikachu e Charmander. A colisão cresce junto.
+- **Efeitos de golpe novos (`js/vfx.js`):**
+  - O projétil deixou de ser uma "bola colorida": agora é um **núcleo de energia por shader** de cada tipo
+    (fogo fervendo, plasma elétrico, água com espuma, fumaça escura com borda brilhante, anéis psíquicos, cristal de gelo...).
+  - **Rastro** (fita) atrás de cada projétil, **arcos elétricos** em volta dos golpes elétricos.
+  - **Impacto** com bolha de energia que estoura, onda de choque, faíscas esticadas e anel no chão.
+  - **Raios (feixes)** com energia correndo por dentro e duas faixas em hélice; Flamethrower e Water Gun ganharam um jato contínuo.
+  - Partículas de fogo, fumaça, faísca e raio trocadas por texturas melhores do **Particle Pack de Kenney (CC0, domínio público)** —
+    `js/particulas-kenney.js`, licença em `efeitos-originais/LICENCA-kenney-particle-pack.txt`.
+  - Tudo gerado por código: quase nada a mais para baixar. No gráfico "Baixa" os raios usam a versão antiga, mais leve.
+
+---
+
 # Pokémon Arena V12 — Mega Evolução com modelos 3D
 
 ## O que mudou na V12

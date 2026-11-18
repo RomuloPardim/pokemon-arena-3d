@@ -75,6 +75,7 @@ const golpe = (nome, tipo, jeito, poder, recarga, extras) =>
    voa     : true = flutua (não pisa na lava nem escorrega no gelo)
    online  : true = o modelo é grande e vem da internet (tem animações reais)
    asasBracos: true = ave cujas asas são os "braços" do esqueleto (batem como asas no voo)
+   crescer : aumenta modelo + colisão (tabela CRESCER logo abaixo da lista)
    escalaModelo: corrige o tamanho visual de um modelo sem mudar a altura do combate
    enrolar : { y, x } = curva fixa por pedaço da cauda (serpentes como o Rayquaza)
    lendario: true = mostra a marca LENDÁRIO na seleção
@@ -128,7 +129,7 @@ const POKEMON = [
     { nome:'Chama Fofa', jeito:'meteoro' }),
   P(144, 'Articuno', 'ice flying', 90, 95, 112, 85, 2.0,
     [golpe('Ice Shard','ice','projetil',40,.5,{qtd:2, abertura:.14}), golpe('Ice Beam','ice','raio',90), golpe('Blizzard','ice','area',110,4.5,{raio:6.5}), golpe('Hurricane','flying','chuva',110)],
-    { nome:'Era do Gelo', jeito:'tempestade' }, { voa:true }),
+    { nome:'Era do Gelo', jeito:'tempestade' }, { voa:true, asasBracos:true, enrolar:{ y:0, x:.09 } }),
   P(145, 'Zapdos', 'electric flying', 90, 125, 87, 100, 2.0,
     [golpe('Thunder Shock','electric','projetil',40,.5), golpe('Thunderbolt','electric','raio',90), golpe('Drill Peck','flying','investida',80), golpe('Thunder','electric','chuva',110)],
     { nome:'Tempestade Lendária', jeito:'tempestade' }, { voa:true }),
@@ -187,7 +188,7 @@ const POKEMON = [
     { nome:'Laços Encantados', jeito:'nova' }),
   P(715, 'Noivern', 'flying dragon', 85, 97, 85, 123, 2.1,
     [golpe('Air Slash','flying','projetil',60,.6), golpe('Dragon Pulse','dragon','raio',85), golpe('Boomburst','normal','area',110,4,{visual:'som', raio:7}), golpe('Hurricane','flying','chuva',110)],
-    { nome:'Onda Ultrassônica', jeito:'tempestade', tipo:'flying' }, { voa:true }),
+    { nome:'Onda Ultrassônica', jeito:'tempestade', tipo:'flying' }, { voa:true, asasBracos:true }),
   P(778, 'Mimikyu', 'ghost fairy', 55, 90, 105, 96, 1.3,
     [golpe('Shadow Sneak','ghost','investida',60,1,{visual:'garra'}), golpe('Shadow Ball','ghost','projetil',70,.9,{tam:.5}), golpe('Play Rough','fairy','area',90,null,{visual:'redemoinho'}), golpe('Swords Dance','normal','buff',0)],
     { nome:'Abraço Assombrado', jeito:'tempestade' }),
@@ -282,7 +283,7 @@ const POKEMON = [
     { nome:'Brilho Eônico', jeito:'rajada', tipo:'dragon' }, { voa:true, lendario:true }),
   P(382, 'Kyogre', 'water', 100, 150, 140, 90, 1.4,
     [golpe('Water Pulse','water','projetil',60,.7,{tam:.55}), golpe('Origin Pulse','water','raio',110,null,{largura:.9}), golpe('Surf','water','area',90), golpe('Thunder','electric','chuva',110)],
-    { nome:'Pulso Primordial', jeito:'nova', tipo:'water' }, { lendario:true }),
+    { nome:'Pulso Primordial', jeito:'nova', tipo:'water' }, { lendario:true, asasBracos:true }),   // asasBracos: nadadeiras abertas (não abaixam como braço)
   P(383, 'Groudon', 'ground', 100, 150, 140, 90, 2.7,
     [golpe('Mud Shot','ground','projetil',55,.7), golpe('Fire Punch','fire','investida',75,1.2,{visual:'punho'}), golpe('Precipice Blades','ground','area',110,4,{raio:6.5}), golpe('Eruption','fire','chuva',120,4.5)],
     { nome:'Lâminas do Abismo', jeito:'meteoro', tipo:'ground' }, { lendario:true }),
@@ -339,6 +340,11 @@ const POKEMON = [
     [golpe('Psystrike','psychic','projetil',55,.6), golpe('Psybeam','psychic','raio',90), golpe('Psychic','psychic','chuva',100), golpe('Aura Sphere','fighting','area',90)],
     { nome:'Destruição Psíquica', jeito:'tempestade' }, { online:true, voa:true }),
 ];
+// Pokémon que ficavam pequenos na tela (medido pela área da silhueta, não só pela altura):
+// "crescer" aumenta o modelo e a colisão juntos. Ex.: o Articuno é quase todo cauda, então a altura enganava.
+const CRESCER = { 4: 1.1, 25: 1.11, 107: 1.39, 123: 1.12, 144: 1.75, 150: 1.41, 151: 1.25, 181: 1.22, 197: 1.2, 253: 1.33, 282: 1.23, 359: 1.2, 448: 1.19, 461: 1.17, 475: 1.5, 658: 1.2, 700: 1.15, 715: 1.37, 716: 1.41, 730: 1.44, 778: 1.5 };
+for (const p of POKEMON) if (CRESCER[p.id]) p.crescer = CRESCER[p.id];
+
 const POR_ID = Object.fromEntries(POKEMON.map(p => [p.id, p]));
 const ICONE = id => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${id}.png`;
 const URL_MODELO_ONLINE = id => `https://raw.githubusercontent.com/Sudhanshu-Ambastha/Pokemon-3D/main/models/glb/regular/${id}.glb`;

@@ -13,6 +13,8 @@ Link para jogar: https://romulopardim.github.io/pokemon-arena-3d/
 - **83 Pokémon jogáveis**, sendo **22 lendários** (Arceus, Rayquaza, Kyogre, Groudon, Lugia, Ho-Oh, Dialga, Palkia, Giratina e outros).
 - **Modelos 3D animados por código**: o esqueleto de cada modelo é reconhecido e animado (andar, correr, voar, atacar), com movimento suavizado.
 - **Pokémon voadores voam de verdade**, e as aves batem as asas.
+- **Animação viva em todas as partes**: boca, pés, mãos e dedos se mexem, e penas, cabelo, roupa e barbatanas balançam com física de mola.
+- **Efeitos de golpe por shader**: núcleo de energia de cada tipo, rastro, arcos elétricos, impactos com onda de choque e raios com energia correndo por dentro.
 - **Combate completo**: combos de 3 a 5 golpes, lançamentos, golpes aéreos, golpe carregado, guarda com barra, contra-ataque, esquiva perfeita, substituição, levantar rápido, quebra de combo.
 - **Mega Evolução e Reversão Primitiva**: 33 formas (31 com modelo 3D próprio), com transformação animada, golpes mais fortes e regras para não ficar desequilibrado (1 por time, só depois de 20 s, custa 50 de energia).
 - **Equipes de 1 a 3 Pokémon**, com troca durante a luta e assistências.
@@ -103,10 +105,13 @@ No celular aparecem um analógico à esquerda e os botões à direita.
 │   ├── lib/                 three.js r149 (empacotado)
 │   ├── dados.js             tipos, golpes, Pokémon, arenas, estilos de combo
 │   ├── catalogo-modelos.js  lista de modelos carregados sob demanda
-│   ├── modelos.js           carrega os modelos e anima o esqueleto por código
+│   ├── modelos.js           carrega os modelos e anima o esqueleto por código (com molas)
 │   ├── arena.js, mapas.js   cenários, clima, perigos e qualidade gráfica
 │   ├── posfx.js             brilho, distorção de impacto e vinheta
 │   ├── efeitos.js           partículas, raios, explosões, sons e música
+│   ├── vfx.js               efeitos por shader: núcleo de energia, rastros, arcos, impactos
+│   ├── particulas-kenney.js texturas de partícula CC0 (fogo, fumaça, faísca)
+│   ├── mega.js              Mega Evolução e Reversão Primitiva
 │   ├── entrada.js           teclado, controles, toque e remapeamento
 │   ├── mobile.js            ajustes para navegador de celular
 │   ├── batalha.js           movimento, golpes especiais, dano e troca
@@ -151,6 +156,7 @@ Para preparar modelos são necessários **Python 3** e **Node.js** (a ferramenta
 
 Este é um **projeto de fã, feito para estudo, sem fins comerciais**. Pokémon e todos os personagens, nomes e marcas relacionados são © Nintendo / Creatures Inc. / GAME FREAK inc. / The Pokémon Company. Este projeto não é afiliado, patrocinado nem aprovado por essas empresas.
 
+- **Texturas de partícula:** [Particle Pack](https://kenney.nl/assets/particle-pack) de Kenney, licença CC0 (domínio público).
 - **Modelos 3D das Megas:** projeto [Pokemon-3D-api/assets](https://github.com/Pokemon-3D-api/assets). Uso educacional e não comercial.
 - **Modelos 3D:** projeto [Pokemon-3D](https://github.com/Sudhanshu-Ambastha/Pokemon-3D), de Sudhanshu Ambastha, que reúne modelos de artistas do Sketchfab (créditos de cada artista nas coleções do autor). Uso educacional e não comercial.
 - **Sprites de efeitos:** [Pokémon Showdown client](https://github.com/smogon/pokemon-showdown-client).

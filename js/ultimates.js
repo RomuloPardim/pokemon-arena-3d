@@ -47,7 +47,7 @@ function acertouUlt(L, A){
   let u = new THREE.Vector3(L.pos.x - A.pos.x, 0, L.pos.z - A.pos.z); if (u.lengthSq() < .01) u.set(0, 0, 1); u.normalize();
   let w = new THREE.Vector3(-u.z, 0, u.x); if (w.dot(O.clone().negate()) < 0) w.negate();      // lado da câmera = para o centro
   const D = 5.5;
-  for (const P of JOGO.projeteis) { cena.remove(P.mesh); } JOGO.projeteis.length = 0;
+  for (const P of JOGO.projeteis) { cena.remove(P.mesh); if (P.fita) soltarFita(P.fita, .1); } JOGO.projeteis.length = 0;
   for (const X of [L, A]) { X.combo = null; X.ataque = null; X.dash = null; X.esquiva = null; X.perseguir = null; X.guardando = false; X.carga = 0; X.vel.set(0, 0, 0); X.vy = 0; X.noAr = false; X.lancado = false; X.caido = 0; }
   A.pos.copy(O); A.y = 0; A.rumo = Math.atan2(u.x, u.z);
   L.pos.copy(O).addScaledVector(u, D); L.y = 0; L.rumo = Math.atan2(-u.x, -u.z);

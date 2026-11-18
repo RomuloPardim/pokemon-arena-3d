@@ -84,6 +84,17 @@ function zigue(g, v){
     };
     img.src = url;
   }
+  // V13: texturas CC0 de Kenney por cima dos desenhos simples (fogo, fumaça, faísca, raio, rastro)
+  for (const [nome, url] of Object.entries(typeof SPRITES_KENNEY !== 'undefined' ? SPRITES_KENNEY : {})) {
+    const idx = CELULAS[nome]; if (idx === undefined) continue;
+    const x = (idx % GRADE)*CEL, y = Math.floor(idx/GRADE)*CEL, img = new Image();
+    img.onload = () => {
+      g.clearRect(x, y, CEL, CEL);
+      g.drawImage(img, x + (CEL - img.width)/2, y + (CEL - img.height)/2);
+      ATLAS.needsUpdate = true; delete TEX_CACHE[nome];
+    };
+    img.src = url;
+  }
   ATLAS.needsUpdate = true;
 })();
 // Textura separada de uma célula (para THREE.Sprite e malhas)
@@ -261,6 +272,7 @@ const GEO = {
   cilindro: new THREE.CylinderGeometry(1, 1, 1, 20, 1, true),
   toro: new THREE.TorusGeometry(1, .07, 8, 40),
 };
+GEO.cilindro_v13 = new THREE.CylinderGeometry(1, 1, 1, 24, 1, true);
 function efeito(mesh, dur, atualizar){ cena.add(mesh); const e = { mesh, t: 0, dur, atualizar }; EFEITOS.push(e); return e; }
 function atualizarEfeitos(dt){
   for (let i = EFEITOS.length - 1; i >= 0; i--) {
@@ -357,8 +369,15 @@ function feixe(tipo, de, ate, largura = .5, dur = .45){
   g.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir);
   const tex = TEX_FEIXE.clone(); tex.needsUpdate = true; tex.repeat.set(1, comp/3);
   // camadas de fora com a cor do tipo (mistura normal) e só o miolo somando luz
-  const mk = (cor, w, op, aditivo) => { const m = new THREE.Mesh(GEO.cilindro, new THREE.MeshBasicMaterial({ map: tex, color: cor, transparent: true, opacity: op, blending: aditivo ? THREE.AdditiveBlending : THREE.NormalBlending, depthWrite: false, side: aditivo ? THREE.DoubleSide : THREE.FrontSide })); m.userData.w = w; m.userData.op = op; g.add(m); return m; };
-  const fora = mk(e.c1, largura*1.7, .45, false), meio = mk(e.c1, largura*1.05, .85, false), dentro = mk(e.c2, largura*.4, .8, true);
+  // V13: camadas com shader (energia correndo pelo feixe); sem shader no modo "baixa"
+  const usarShader = typeof materialFeixe === 'function' && QUAL.particulas > .6;      // no "baixa" (celular fraco) usa a textura antiga, mais leve
+  const mk = (cor, w, op, aditivo, nucleo) => {
+    let mat;
+    if (usarShader) { mat = materialFeixe(tipo, nucleo); mat.uniforms.comp.value = comp; }
+    else mat = new THREE.MeshBasicMaterial({ map: tex, color: cor, transparent: true, opacity: op, blending: aditivo ? THREE.AdditiveBlending : THREE.NormalBlending, depthWrite: false, side: aditivo ? THREE.DoubleSide : THREE.FrontSide });
+    const m = new THREE.Mesh(GEO.cilindro_v13 || GEO.cilindro, mat); m.userData.w = w; m.userData.op = op; m.renderOrder = nucleo ? 6 : 5; g.add(m); return m; };
+  const fora = mk(e.c1, largura*1.8, .45, false, false), meio = mk(e.c1, largura*1.05, .85, false, false), dentro = mk(e.c2, largura*.45, .8, true, true);
+  const helices = usarShader && QUAL.particulas > .6 ? [0, Math.PI].map(f => heliceFeixe(tipo, de, ate, largura*1.25, f)) : [];
   // anéis que correm pelo feixe
   const aneis = [];
   for (let i = 0; i < 4; i++) { const a = new THREE.Mesh(GEO.toro, new THREE.MeshBasicMaterial({ color: e.c1, transparent: true, depthWrite: false })); a.rotation.x = Math.PI/2; a.userData.f = i/4; g.add(a); aneis.push(a); }
@@ -366,15 +385,20 @@ function feixe(tipo, de, ate, largura = .5, dur = .45){
   const ponta = spriteFx('brilho', e.c1, largura*6, false); ponta.position.copy(ate); cena.add(ponta);
   efeito(g, dur, (ef, k, dt) => {
     const w = (k < .12 ? k/.12 : 1 - Math.pow((k - .12)/.88, 2)) * (1 + Math.sin(ef.t*60)*.08);
-    for (const m of [fora, meio, dentro]) { m.scale.set(m.userData.w*w, comp, m.userData.w*w); m.material.opacity = m.userData.op*Math.min(1, w*1.5); }
+    for (const m of [fora, meio, dentro]) { m.scale.set(m.userData.w*w, comp, m.userData.w*w);
+      if (m.material.uniforms) m.material.uniforms.opac.value = Math.min(1, w*1.5)*(m === fora ? .8 : 1); else m.material.opacity = m.userData.op*Math.min(1, w*1.5); }
+    for (const h of helices) { h.atualizarHelice(ef.t, w); h.opacidade = Math.min(1, w*1.3); }
+    if (tipo === 'electric' && Math.random() < .6) { const a = de.clone().lerp(ate, Math.random()), b = a.clone().add(new THREE.Vector3(rnd(-1, 1), rnd(-1, 1), rnd(-1, 1)).multiplyScalar(largura*2.2)); arcoEletrico(a, b, .06, .08, largura*.6); }
     tex.offset.y -= dt*8;
     for (const a of aneis) { a.userData.f = (a.userData.f + dt*2.5) % 1; a.position.y = (a.userData.f - .5)*comp; a.scale.setScalar(largura*1.4*w*(1 + a.userData.f*.6)); a.material.opacity = (1 - a.userData.f)*w; }
     boca.scale.setScalar(largura*3.5*w); ponta.scale.setScalar(largura*4.5*w*(1 + Math.random()*.3)); boca.material.opacity = ponta.material.opacity = .55*w;
     // partículas ao longo do feixe
     if (Math.random() < .9) { const p = de.clone().lerp(ate, Math.random()); soltar(tipo, p.x, p.y, p.z, 1, 2.5, .4, .4); }
     if (Math.random() < .5) soltar(tipo, ate.x, ate.y, ate.z, 2, 5, .45, .45);
-    if (k >= 1) { cena.remove(boca); cena.remove(ponta); boca.material.dispose(); ponta.material.dispose(); }
+    if (k >= 1) { cena.remove(boca); cena.remove(ponta); boca.material.dispose(); ponta.material.dispose(); for (const h of helices) h.liberar();
+      if (typeof impactoVFX === 'function' && QUAL.particulas > .45) impactoVFX(tipo, ate.x, ate.y, ate.z, largura*1.6); }
   });
+  if (typeof impactoVFX === 'function' && QUAL.particulas > .45) setTimeout(() => impactoVFX(tipo, ate.x, ate.y, ate.z, largura*2), 60);
   // raio elétrico: além do feixe, vários relâmpagos tremendo
   if (tipo === 'electric') for (let i = 0; i < 5; i++) setTimeout(() => zigueZague(de, ate, e.c1, .1), i*60);
 }
@@ -553,10 +577,22 @@ function rachaduras(x, z, raio){
 // jato contínuo (lança-chamas, jato d'água): segue a boca do Pokémon
 function jato(L, g, dir, dur = .6){
   const e = estilo(g.tipo), o = new THREE.Object3D();
+  // V13: "cone" de energia por shader (o jato contínuo) por baixo das partículas
+  let cone = null;
+  if (typeof materialFeixe === 'function' && QUAL.particulas > .45) {
+    const geo = new THREE.CylinderGeometry(1, .18, 1, 20, 1, true); geo.translate(0, -.5, 0);   // ponta fina na boca
+    cone = new THREE.Mesh(geo, materialFeixe(g.tipo, false)); cone.material.uniforms.comp.value = 7; cone.renderOrder = 5; o.add(cone);
+  }
   efeito(o, dur, (ef, k) => {
     if (!L.emCampo) return;
     const d = new THREE.Vector3(Math.sin(L.rumo), 0, Math.cos(L.rumo));
     const p = centroDe(L).addScaledVector(d, L.raio*.9);
+    if (cone) {
+      const w = Math.min(1, k*6)*(k > .8 ? (1 - k)/.2 : 1), comp = 7.5*Math.min(1, k*5);
+      cone.position.copy(p); cone.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), d);
+      cone.scale.set(1.25*w + .1, comp, 1.25*w + .1); cone.material.uniforms.opac.value = w;
+      if (k >= 1) cone.geometry.dispose();
+    }
     for (let i = 0; i < 9; i++) {
       const v = d.clone().multiplyScalar(rnd(16, 22)).add(new THREE.Vector3(rnd(-1.2, 1.2), rnd(-.6, 1), rnd(-1.2, 1.2)));
       const cel = escolher(e.rastro);
