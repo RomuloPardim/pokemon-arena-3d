@@ -1,6 +1,6 @@
 # Onde fica cada coisa (jogo 2D em pastas)
 
-Os guias foram escritos para o **arquivo único** `pokemon-arena.html`. Eles mandam você procurar (Ctrl+F) um trecho de código.
+Os guias antigos foram escritos para o **arquivo único** `pokemon-arena.html` (removido na V15). Eles mandam você procurar (Ctrl+F) um trecho de código.
 Na versão em pastas, o mesmo trecho está em um destes arquivos. No VS Code, use **Ctrl+Shift+F** (buscar em todos os arquivos)
 com o trecho do guia — ou consulte a tabela:
 
@@ -62,6 +62,7 @@ com o trecho do guia — ou consulte a tabela:
 | `js/12-batalha-logica.js` | Entrada, HUD, física, dano, golpes, eventos do mapa, IA, atualização |
 | `js/13-ambiente.js` | Clima, partículas do cenário, luz |
 | `js/14-desenho-e-loop.js` | Desenho de tudo na tela e o loop principal |
+| `js/15-cinematicas.js` | Abertura, Pokébola, Mega Evolução (`MEGAS_2D`), escolha X/Y e finalização |
 
 > A ordem das `<script>` no `index.html` importa: um arquivo pode usar o que foi definido nos anteriores.
-> Depois de editar, rode `python ferramentas/montar.py` para gerar de novo o arquivo único.
+> O `15-cinematicas.js` vem antes do `14-desenho-e-loop.js`, porque o 14 usa as funções dele.

@@ -53,10 +53,13 @@ async function carregarLuta(P){
   }
 }
 function limparLuta(){
+  limparBonusItens();
   for (const t of [0, 1]) for (const m of JOGO.times[t]) { tirarDeCampo(m); liberarInstancia(m.inst); }
   for (const P of JOGO.projeteis) { cena.remove(P.mesh); if (P.fita) P.fita.liberar(); }
   if (JOGO.cineAtiva) { for (const x of JOGO.cineAtiva.extras) cena.remove(x); JOGO.cineAtiva = null; }
   JOGO.times = [[], []]; JOGO.projeteis = []; JOGO.agenda = []; JOGO.fim = false; JOGO.pausado = false; JOGO.cineMega = null; JOGO.finalizando = false;
+  if (JOGO.escolhaMega) fecharEscolhaMega();
+  limparItensMapa();
   CAM.cine = null; document.body.classList.remove('cine', 'velocidade', 'ko'); ambienteCine(0);
   limparEfeitos();
 }
@@ -89,8 +92,11 @@ function loop(agora){
     navegarMenus(real); navegarSelecao(real);
     if (EM_BATALHA()) {
       // pausa: qualquer jogador humano
-      for (const t of [0, 1]) if (JOGO.controle[t] === 'jogador' && ENTRADAS[JOGO.jogadorDoTime[t]].disparou.has('pausa') && !JOGO.fim) pausar(!JOGO.pausado);
-      if (!JOGO.pausado) passoBatalha(real);
+      if (JOGO.escolhaMega) atualizarEscolhaMega(real);          // V15: escolhendo Mega X ou Y (luta parada)
+      else {
+        for (const t of [0, 1]) if (JOGO.controle[t] === 'jogador' && ENTRADAS[JOGO.jogadorDoTime[t]].disparou.has('pausa') && !JOGO.fim) pausar(!JOGO.pausado);
+        if (!JOGO.pausado) passoBatalha(real);
+      }
     } else passoVitrine(real);
     atualizarArena(real); atualizarPos(real);
     desenharCena();
@@ -116,6 +122,7 @@ function passoBatalha(real){
     if (JOGO.regras.treino) atualizarTreino(dt);
     if (JOGO.regras.caos && !JOGO.fim) atualizarCaos(dt);
     atualizarProjeteis(dt);
+    atualizarItensMapa(dt);                  // V15: mini poderes no mapa
   }
   atualizarEfeitos(dt);
   BRILHO.atualizar(dt); FUMACA.atualizar(dt); atualizarLuzes(dt); atualizarNumeros(real); ambiente(dt);

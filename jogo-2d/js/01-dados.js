@@ -161,6 +161,48 @@ mv('Bounce','flying','leap',85,5,{range:380,radius:100,stun:.3});
 mv('Heavy Slam','steel','leap',100,6,{range:320,radius:130});
 mv('Bug Buzz','bug','nova',90,4.5);
 
+// ----- V15: golpes novos (para os 56 Pokémon novos) -----
+mv('Thunder Punch','electric','melee',75,2.2,{stun:.15});
+mv('Bolt Strike','electric','dash',120,6,{stun:.3});
+mv('Sacred Fire','fire','zone',100,5.5,{radius:120,burn:.5});
+mv('Blue Flare','fire','beam',130,7,{w:24,burn:.3});
+mv('Lava Plume','fire','nova',80,4.5,{burn:.3});
+mv('Aeroblast','flying','beam',100,5);
+mv('Oblivion Wing','flying','beam',95,5,{w:22});
+mv('Dragon Ascent','flying','dash',120,6);
+mv('Roar of Time','dragon','beam',140,8,{w:28});
+mv('Spacial Rend','dragon','multi',100,5,{count:5,spread:.25});
+mv('Shadow Force','ghost','dash',120,6);
+mv('Spirit Shackle','ghost','proj',80,2.4);
+mv('Judgment','normal','nova',100,6,{radius:190});
+mv('Psycho Boost','psychic','beam',140,7,{w:24});
+mv('Behemoth Blade','steel','melee',100,3);
+mv('Sacred Sword','fighting','melee',90,2.6);
+mv('Leaf Storm','grass','zone',120,6,{radius:120});
+mv('Magical Leaf','grass','multi',60,1.6,{count:3});
+mv('Power Gem','rock','proj',80,1.8);
+mv('Sparkling Aria','water','nova',90,4.5);
+mv('Snipe Shot','water','proj',80,1.6,{speed:950,r:8});
+mv('Clanging Scales','dragon','nova',110,5.5,{radius:160});
+mv('Drum Beating','grass','nova',80,4);
+mv('Accelerock','rock','dash',60,2.5);
+mv('Origin Pulse','water','multi',110,5.5,{count:5,spread:.3});
+mv('Precipice Blades','ground','zone',120,6,{radius:130});
+mv('Moongeist Beam','ghost','beam',100,5);
+mv('Photon Geyser','psychic','zone',110,5.5);
+mv('Flash','electric','nova',60,4,{stun:.4});
+mv('Leech Life','bug','melee',80,2.2);
+mv('Megahorn','bug','dash',120,5.5);
+mv('Sucker Punch','dark','dash',70,3);
+mv('Doom Desire','steel','zone',120,6.5,{delay:1});
+mv('Dark Void','dark','zone',0,9,{stun:1.2,radius:110});
+mv('Nasty Plot','dark','buff',0,8);
+mv('Geomancy','fairy','buff',0,9);
+mv('Earth Power','ground','zone',90,4.5);
+mv('Aqua Tail','water','melee',90,2.4);
+mv('Dragon Darts','dragon','multi',50,1.6,{count:2,spread:.12});
+mv('Kings Shield','steel','buff',0,8);
+
 /* ----- Pokémon: [id, nome, tipos, hp, ataque, defesa, velocidade, golpes] ----- */
 const POKES = [
  [3,'Venusaur','grass poison',80,100,100,80,['Razor Leaf','Sludge Bomb','Giga Drain','Solar Beam']],
@@ -208,6 +250,63 @@ const POKES = [
  [700,'Sylveon','fairy',95,110,115,60,['Fairy Wind','Moonblast','Hyper Voice','Calm Mind']],
  [727,'Incineroar','fire dark',95,115,90,60,['Fire Fang','Darkest Lariat','Flare Blitz','Bounce']],
  [778,'Mimikyu','ghost fairy',55,90,105,96,['Shadow Sneak','Shadow Claw','Play Rough','Swords Dance']],
+ // ----- V15: 56 novos (total 100) -----
+ [7,'Squirtle','water',44,65,65,43,['Water Gun','Bite','Aqua Tail','Hydro Pump']],
+ [38,'Ninetales','fire',73,81,100,100,['Ember','Flamethrower','Dark Pulse','Fire Blast']],
+ [107,'Hitmonchan','fighting',50,105,79,76,['Mach Punch','Thunder Punch','Ice Punch','Close Combat']],
+ [123,'Scyther','bug flying',70,110,80,105,['Quick Attack','X-Scissor','Air Slash','Swords Dance']],
+ [133,'Eevee','normal',55,55,55,55,['Quick Attack','Bite','Hyper Voice','Body Slam']],
+ [134,'Vaporeon','water',130,110,80,65,['Water Gun','Aqua Tail','Surf','Hydro Pump']],
+ [136,'Flareon','fire',65,130,85,65,['Ember','Fire Fang','Flare Blitz','Fire Blast']],
+ [142,'Aerodactyl','rock flying',80,105,70,130,['Rock Throw','Bite','Rock Slide','Brave Bird']],
+ [144,'Articuno','ice flying',90,95,110,85,['Ice Shard','Ice Beam','Hurricane','Blizzard']],
+ [145,'Zapdos','electric flying',90,125,87,100,['Thunder Shock','Drill Peck','Thunderbolt','Thunder']],
+ [146,'Moltres','fire flying',90,125,87,90,['Ember','Air Slash','Heat Wave','Fire Blast']],
+ [157,'Typhlosion','fire',78,109,82,100,['Ember','Lava Plume','Flamethrower','Fire Blast']],
+ [160,'Feraligatr','water',85,105,95,78,['Water Gun','Crunch','Aqua Tail','Hydro Pump']],
+ [181,'Ampharos','electric',90,115,88,55,['Thunder Shock','Flash','Thunderbolt','Thunder']],
+ [196,'Espeon','psychic',65,130,85,110,['Confusion','Psybeam','Psychic','Calm Mind']],
+ [214,'Heracross','bug fighting',80,125,85,85,['Leech Life','Close Combat','Megahorn','Stone Edge']],
+ [229,'Houndoom','dark fire',75,110,65,95,['Ember','Crunch','Flamethrower','Dark Pulse']],
+ [243,'Raikou','electric',90,115,85,115,['Thunder Shock','Extreme Speed','Thunderbolt','Thunder']],
+ [249,'Lugia','psychic flying',106,110,140,110,['Gust','Psychic','Aeroblast','Hurricane']],
+ [250,'Ho-Oh','fire flying',106,130,110,90,['Ember','Brave Bird','Sacred Fire','Fire Blast']],
+ [251,'Celebi','psychic grass',100,100,100,100,['Magical Leaf','Confusion','Leaf Storm','Recover']],
+ [253,'Grovyle','grass',50,85,55,95,['Razor Leaf','Quick Attack','Leaf Blade','Energy Ball']],
+ [306,'Aggron','steel rock',70,110,180,50,['Rock Throw','Iron Head','Heavy Slam','Stone Edge']],
+ [359,'Absol','dark',65,130,60,75,['Bite','Night Slash','Sucker Punch','Swords Dance']],
+ [380,'Latias','dragon psychic',80,110,120,110,['Dragon Breath','Psybeam','Dragon Pulse','Recover']],
+ [381,'Latios','dragon psychic',80,130,100,110,['Dragon Breath','Psybeam','Dragon Pulse','Draco Meteor']],
+ [382,'Kyogre','water',100,150,120,90,['Water Gun','Ice Beam','Origin Pulse','Hydro Pump']],
+ [383,'Groudon','ground',100,150,120,90,['Mud Shot','Lava Plume','Precipice Blades','Earthquake']],
+ [384,'Rayquaza','dragon flying',105,150,90,95,['Dragon Breath','Dragon Ascent','Outrage','Draco Meteor']],
+ [385,'Jirachi','steel psychic',100,100,100,100,['Confusion','Iron Head','Doom Desire','Psychic']],
+ [386,'Deoxys','psychic',70,150,70,150,['Confusion','Zen Headbutt','Psycho Boost','Psychic']],
+ [466,'Electivire','electric',75,123,75,95,['Thunder Shock','Thunder Punch','Wild Charge','Thunder']],
+ [471,'Glaceon','ice',65,130,110,65,['Ice Shard','Ice Beam','Icicle Crash','Blizzard']],
+ [475,'Gallade','psychic fighting',68,125,105,80,['Confusion','Sacred Sword','Zen Headbutt','Close Combat']],
+ [483,'Dialga','steel dragon',100,150,110,90,['Dragon Breath','Flash Cannon','Roar of Time','Draco Meteor']],
+ [484,'Palkia','water dragon',90,150,110,100,['Water Gun','Dragon Pulse','Spacial Rend','Hydro Pump']],
+ [487,'Giratina','ghost dragon',150,100,120,90,['Shadow Ball','Dragon Claw','Shadow Force','Draco Meteor']],
+ [491,'Darkrai','dark',70,135,90,125,['Bite','Dark Pulse','Dark Void','Nasty Plot']],
+ [493,'Arceus','normal',120,120,120,120,['Hyper Voice','Extreme Speed','Judgment','Recover']],
+ [571,'Zoroark','dark',60,120,60,105,['Bite','Night Slash','Dark Pulse','Nasty Plot']],
+ [635,'Hydreigon','dark dragon',92,125,90,98,['Dragon Breath','Crunch','Dark Pulse','Draco Meteor']],
+ [643,'Reshiram','dragon fire',100,150,110,90,['Ember','Dragon Pulse','Blue Flare','Draco Meteor']],
+ [644,'Zekrom','dragon electric',100,150,110,90,['Thunder Shock','Dragon Claw','Bolt Strike','Outrage']],
+ [681,'Aegislash','steel ghost',60,140,140,60,['Shadow Sneak','Sacred Sword','Flash Cannon','Kings Shield']],
+ [715,'Noivern','flying dragon',85,97,80,123,['Gust','Air Slash','Dragon Pulse','Hurricane']],
+ [716,'Xerneas','fairy',126,131,98,99,['Fairy Wind','Moonblast','Dazzling Gleam','Geomancy']],
+ [717,'Yveltal','dark flying',126,131,98,99,['Gust','Dark Pulse','Oblivion Wing','Hurricane']],
+ [724,'Decidueye','grass ghost',78,107,95,70,['Razor Leaf','Spirit Shackle','Leaf Blade','Leaf Storm']],
+ [730,'Primarina','water fairy',80,126,116,60,['Water Gun','Moonblast','Sparkling Aria','Hydro Pump']],
+ [745,'Lycanroc','rock',75,115,65,112,['Rock Throw','Accelerock','Crunch','Stone Edge']],
+ [784,'Kommo-o','dragon fighting',75,110,125,85,['Dragon Claw','Close Combat','Clanging Scales','Dragon Dance']],
+ [800,'Necrozma','psychic',97,113,109,79,['Power Gem','Psybeam','Photon Geyser','Calm Mind']],
+ [812,'Rillaboom','grass',100,125,90,85,['Razor Leaf','Wood Hammer','Drum Beating','Swords Dance']],
+ [818,'Inteleon','water',70,125,65,120,['Water Gun','Snipe Shot','Aqua Jet','Hydro Pump']],
+ [887,'Dragapult','dragon ghost',88,120,75,142,['Dragon Darts','Shadow Ball','Dragon Rush','Draco Meteor']],
+ [888,'Zacian','fairy steel',92,130,115,138,['Fairy Wind','Behemoth Blade','Play Rough','Swords Dance']],
 ].map(([id,name,types,hp,atk,def,spe,moves]) => ({id,name,types:types.split(' '),hp,atk,def,spe,moves}));
 const BYID = Object.fromEntries(POKES.map(p => [p.id,p]));
 

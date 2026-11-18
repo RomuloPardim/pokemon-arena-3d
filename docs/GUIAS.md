@@ -14,9 +14,8 @@
 - **Adicionar Pokémon, golpes, mapas, obstáculos, terrenos, itens, eventos e Ultimates:**
   https://claude.ai/artifact/L2Mz98cP4Pjcc6eeVERyUD
 
-Os guias mandam buscar trechos de código com Ctrl+F no arquivo único (`jogo-2d-arquivo-unico/pokemon-arena.html`).
-Você pode seguir assim mesmo, ou editar a versão em pastas: no VS Code use **Ctrl+Shift+F** com o mesmo trecho,
-ou veja a tabela em [ONDE-FICA-2D.md](ONDE-FICA-2D.md). Depois rode `python jogo-2d/ferramentas/montar.py`.
+Os guias antigos falam em um "arquivo único"; desde a V15 o 2D existe só em pastas (`jogo-2d/`).
+No VS Code use **Ctrl+Shift+F** com o trecho do guia, ou veja a tabela em [ONDE-FICA-2D.md](ONDE-FICA-2D.md).
 
 Para o **jogo 3D**, o resumo de onde mexer está no `LEIA-ME.md` da raiz.
 

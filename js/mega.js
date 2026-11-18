@@ -30,28 +30,37 @@ function podeMegaEvoluir(L){
   return true;
 }
 const corCSS = c => '#' + c.toString(16).padStart(6, '0');
+// forma de Mega deste lutador (a escolhida, se tiver X e Y)
+const megaDe = L => L.megaForma || MEGAS[L.p.id];
 
 // Ficha usada para montar o modelo da Mega: a do Pokémon, com os ajustes da Mega por cima
 function fichaDaMega(L){
-  const M = MEGAS[L.p.id], p = L.p;
+  const M = megaDe(L), p = L.p;
   return Object.assign({}, p, {
     altura: (M.altura || p.altura)*REGRAS_MEGA.escala,
     escalaModelo: M.escalaModelo ?? p.escalaModelo, enrolar: M.enrolar ?? p.enrolar,
-    asasBracos: M.asasBracos ?? p.asasBracos, voa: M.voa ?? p.voa, ocultarMalhas: M.ocultarMalhas, ampAsa: M.ampAsa ?? p.ampAsa,
+    asasBracos: M.asasBracos ?? p.asasBracos, voa: M.voa ?? p.voa, ocultarMalhas: M.ocultarMalhas, ampAsa: M.ampAsa ?? p.ampAsa, semAutoRig: M.semAutoRig ?? p.semAutoRig,
   });
 }
 
-function megaEvoluir(L){
+function megaEvoluir(L, forma){
   const pode = podeMegaEvoluir(L);
   if (pode !== true) { if (L.time !== undefined && pode !== 'sem Mega' && pode !== 'ocupado') avisoCombate(L.time, pode.toUpperCase(), '#9aa6c0'); return false; }
-  const M = MEGAS[L.p.id];
+  const base = MEGAS[L.p.id];
+  // V15: duas Megas (X e Y) → o jogador escolhe; a CPU sorteia
+  if (base.outra && !forma) {
+    if (JOGO.controle[L.time] === 'jogador') { abrirEscolhaMega(L); return false; }
+    forma = Math.random() < .5 ? base : base.outra;
+  }
+  const M = L.megaForma = forma || base;
+  if (L.megaInst && L.megaInstDe !== M.modelo) L.megaInst = null;
   JOGO.megas[L.time]++;
   L.en -= REGRAS_MEGA.custo;
   L.megaT = REGRAS_MEGA.duracao;            // tempo restante da transformação
   L.inv = Math.max(L.inv, REGRAS_MEGA.duracao);
   L.ataque = { t: 0, dur: REGRAS_MEGA.duracao, jeito: 'buff' };   // pose de "carregar energia"
   // começa a montar o modelo da Mega agora (fica pronto antes do meio da transformação)
-  if (M.modelo && !L.megaInst) L.megaInst = criarInstancia(M.modelo, null, fichaDaMega(L)).catch(() => null);
+  if (M.modelo && !L.megaInst) { L.megaInstDe = M.modelo; L.megaInst = criarInstancia(M.modelo, null, fichaDaMega(L)).catch(() => null); }
   banner(M.primal ? 'REVERSÃO PRIMITIVA!' : 'MEGA EVOLUÇÃO!', corCSS(M.cor), true);
   SOM.ult(); vibrarTime(L.time, .8, 400);
   esferaMega(L, M);
@@ -61,9 +70,9 @@ function megaEvoluir(L){
 
 // Chamado todo quadro para cada lutador em campo (batalha.js)
 function atualizarMega(L, dt){
-  const M = MEGAS[L.p.id];
-  // deixa o modelo da Mega carregando em segundo plano assim que o Pokémon entra em campo
-  if (M && M.modelo && !L.megaPre) { L.megaPre = true; carregarModelo(M.modelo).catch(() => {}); }
+  const M = megaDe(L);
+  // deixa o(s) modelo(s) da Mega carregando em segundo plano assim que o Pokémon entra em campo
+  if (M && !L.megaPre) { L.megaPre = true; for (const f of [M, M.outra]) if (f && f.modelo) carregarModelo(f.modelo).catch(() => {}); }
   if (L.megaT > 0) {
     const antes = L.megaT;
     L.megaT -= dt;
@@ -120,7 +129,7 @@ function esferaMega(L, M){
 
 /* ----- Golpes com visual de Mega (chamado em usarGolpe) ----- */
 function golpeMega(L, g, origem){
-  const M = MEGAS[L.p.id]; if (!M) return;
+  const M = megaDe(L); if (!M) return;
   flash('anel', M.cor, L.pos.x, .1, L.pos.z, L.altura*1.6, .35);
   flash('brilho', M.cor, origem.x, origem.y, origem.z, 2.2, .22);
   for (let k = 0; k < 10; k++) {
@@ -128,4 +137,45 @@ function golpeMega(L, g, origem){
     part('brilho', { x: L.pos.x + Math.cos(a)*L.raio*1.4, y: .2, z: L.pos.z + Math.sin(a)*L.raio*1.4, vx: Math.cos(a)*1.5, vy: rnd(3, 5), vz: Math.sin(a)*1.5,
       cor: M.cor, tam: .3, vida: .45, atrito: .5, brilhar: true });
   }
+}
+
+/* =========================================================
+   ESCOLHA ENTRE MEGA X E MEGA Y (V15)
+   A luta fica parada enquanto o jogador escolhe.
+   Teclado/controle: esquerda/direita + Mega (ou Ataque) confirma · Golpe 1 = X · Golpe 2 = Y · Esquiva cancela.
+   Celular/mouse: toque no cartão. Depois de 8 s escolhe sozinho.
+   ========================================================= */
+function abrirEscolhaMega(L){
+  const M = MEGAS[L.p.id];
+  const formas = [M, M.outra].sort((a, b) => (a.letra || '').localeCompare(b.letra || ''));
+  JOGO.escolhaMega = { L, formas, sel: 0, t: 0, n: JOGO.jogadorDoTime[L.time], dxAnt: 0 };
+  const el = $('#escolhaMega');
+  el.innerHTML = `<h3>ESCOLHA A MEGA EVOLUÇÃO</h3><div class="opcoes">` +
+    formas.map((f, i) => `<button class="opMega" data-i="${i}" style="--c:${corCSS(f.cor)}"><b>${f.letra}</b><span>${f.nome}</span></button>`).join('') +
+    `</div><p class="dica">← → escolhe · ${DISPOSITIVO_MOVEL ? 'toque para confirmar' : 'MEGA ou ATAQUE confirma · ESQUIVA cancela'}</p>`;
+  el.querySelectorAll('.opMega').forEach(b => b.addEventListener('click', () => escolherMega(+b.dataset.i)));
+  el.classList.remove('hidden'); marcarEscolhaMega();
+  SOM.menu && SOM.menu();
+}
+function marcarEscolhaMega(){
+  const R = JOGO.escolhaMega; if (!R) return;
+  $('#escolhaMega').querySelectorAll('.opMega').forEach((b, i) => b.classList.toggle('sel', i === R.sel));
+}
+function atualizarEscolhaMega(real){
+  const R = JOGO.escolhaMega; R.t += real;
+  const E = ENTRADAS[R.n] || ENTRADA_VAZIA();
+  const dx = (E.dpad && E.dpad.x) || (Math.abs(E.x) > .5 ? Math.sign(E.x) : 0);
+  if (dx && !R.dxAnt) { R.sel = (R.sel + 1) % 2; marcarEscolhaMega(); SOM.menu && SOM.menu(); }
+  R.dxAnt = dx;
+  if (E.disparou.has('golpe0')) return escolherMega(0);
+  if (E.disparou.has('golpe1')) return escolherMega(1);
+  if (E.disparou.has('mega') || E.disparou.has('ataque') || E.disparou.has('pulo')) return escolherMega(R.sel);
+  if (E.disparou.has('esquiva') || E.disparou.has('pausa')) return fecharEscolhaMega();
+  if (R.t > 8) escolherMega(R.sel);
+}
+function fecharEscolhaMega(){ JOGO.escolhaMega = null; $('#escolhaMega').classList.add('hidden'); }
+function escolherMega(i){
+  const R = JOGO.escolhaMega; if (!R) return;
+  fecharEscolhaMega();
+  megaEvoluir(R.L, R.formas[i]);
 }

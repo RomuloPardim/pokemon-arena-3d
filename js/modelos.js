@@ -100,8 +100,16 @@ function classificarOsso(nomeOriginal){
   else if (/^(right_|R(?=[A-Z])|R_(?=[A-Za-z]))/.test(n)) lado = 1;
   let b = n.replace(/^(left_|right_|L(?=[A-Z])|R(?=[A-Z])|L_(?=[A-Za-z])|R_(?=[A-Za-z]))/, '').toLowerCase();
   if (!lado) { const m = n.match(/[a-z_](R|L)$/); if (m) { lado = m[1] === 'L' ? -1 : 1; b = b.slice(0, -1).replace(/_$/, ''); } }   // "EarR", "Ear_tipL"
+  let numLado = '';
+  if (!lado) { const m = n.match(/_(L|R)(\d*)$/); if (m) { lado = m[1] === 'L' ? -1 : 1; numLado = m[2]; b = b.replace(/_(l|r)\d*$/, ''); } }   // "Front_Leg_L001" (quadrúpedes)
   let parte = null;
-  if (/^thigh|^leg_?0?1$|^upperleg/.test(b)) parte = 'coxa';
+  // quadrúpedes com nomes "Front_Leg / Back_Leg" (ex.: Zacian): patas da frente = braços, de trás = pernas
+  const nl = numLado === '' ? 0 : +numLado;
+  if (/^front_?leg$/.test(b) && lado) parte = nl === 0 ? 'braco' : nl === 1 ? 'antebraco' : 'mao';
+  else if (/^front_?foot$/.test(b) && lado) parte = 'mao';
+  else if (/^(back|hind|rear)_?leg$/.test(b) && lado) parte = nl === 0 ? 'coxa' : nl === 1 ? 'perna' : 'pe';
+  else if (/^(back|hind|rear)_?foot$/.test(b) && lado) parte = 'pe';
+  else if (/^thigh|^leg_?0?1$|^upperleg/.test(b)) parte = 'coxa';
   else if (/^leg$|^calf$/.test(b) && lado) parte = 'perna';
   else if (/^arm\d?$|^arm_0?1$|^upperarm|^arma$/.test(b) && lado) parte = 'braco';
   else if (/^forearm\d?$|^arm_0?2$/.test(b) && lado) parte = 'antebraco';
@@ -112,7 +120,7 @@ function classificarOsso(nomeOriginal){
   else if (/^neck_?0?\d?$/.test(b)) parte = 'pescoco';             // Neck1, Neck2, neck_03 (pescoços longos)
   else if (/^spine_?0?1$|^spine$|^body$/.test(b)) parte = 'coluna';
   else if (/^ear_?0?1$|^ear$|^ear1$/.test(b) && lado) parte = 'orelha';
-  else if (/^(lower)?jaw_?0?1?$|^lowerjaw\d?$|^mouth$/.test(b)) parte = 'mandibula';     // boca abre nos golpes
+  else if (/^(lower)?jaw_?0?1?$|^lowerjaw\d?$|^mouth$|^mouse$/.test(b)) parte = 'mandibula';     // boca abre nos golpes
   else if (/^shoulder\d?$/.test(b) && lado) parte = 'ombro';
   else if (/^foot(sub)?\d?$/.test(b) && lado) parte = 'pe';
   else if (/^hand(sub)?\d?$/.test(b) && lado) parte = 'mao';
@@ -198,7 +206,8 @@ function montarRig(obj, opcoes = {}){
     if (!parte) continue;
     const qW = new THREE.Quaternion(); o.getWorldQuaternion(qW); qW.premultiply(raizInv);   // rotação no espaço do modelo
     // direção do osso (até o primeiro filho) — usada para detectar "pose em T"
-    let dir = null; const filho = o.children.find(f => f.isBone);
+    let dir = null; let filho = o.children.find(f => f.isBone);
+    if (!filho) o.traverse(f => { if (!filho && f !== o && f.isBone) filho = f; });   // filho "escondido" atrás de um nó comum (ex.: trLFeelerA2)
     if (filho) {
       const a = new THREE.Vector3(), b = new THREE.Vector3(); o.getWorldPosition(a); filho.getWorldPosition(b);
       dir = b.sub(a).applyQuaternion(raizInv); if (dir.lengthSq() > 1e-8) dir.normalize(); else dir = null;
@@ -209,6 +218,12 @@ function montarRig(obj, opcoes = {}){
   // (aves cujas asas são os "braços" do esqueleto ficam com as asas abertas)
   if (!opcoes.asasBracos) for (const r of ossos) if (r.parte === 'braco' && !r.o.userData.auto && r.dir && Math.abs(r.dir.y) < .5 && Math.abs(r.dir.x) > .6)
     r.descanso = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1), -Math.sign(r.dir.x)*1.1);
+  // corrente genérica "Bone001, Bone002..." sem nenhuma parte reconhecida (ex.: Onix): vira uma cauda que ondula
+  if (!ossos.length) obj.traverse(o => {
+    if (!o.isBone) return; const m = o.name.match(/^bone_?(\d+)/i); if (!m) return;
+    const qW = new THREE.Quaternion(); o.getWorldQuaternion(qW); qW.premultiply(raizInv);
+    ossos.push({ o, parte: 'cauda', lado: 0, num: +m[1], b0: o.quaternion.clone(), qW, qWi: qW.clone().invert(), dir: null });
+  });
   // índice da cauda (para a onda passar do começo para a ponta)
   const caudas = ossos.filter(r => r.parte === 'cauda').sort((a,b) => a.num - b.num);
   caudas.forEach((r, i) => r.idx = i);
@@ -280,7 +295,14 @@ async function criarInstancia(id, progresso, fichaForcada){
     const novos = lista.map(m => { const c = m.clone(); materiais.push(c); return c; });
     o.material = Array.isArray(o.material) ? novos : novos[0];
   });
-  autoRig(obj);                                       // modelo sem esqueleto ganha um simples
+  // poseFixa: gira um nó do modelo uma vez (no espaço do modelo), ex.: abaixar os braços-fita do Deoxys
+  if (dados.poseFixa) { obj.updateMatrixWorld(true); const qR = new THREE.Quaternion(), qP = new THREE.Quaternion(), qN = new THREE.Quaternion();
+    for (const [nome, [rx, ry, rz]] of Object.entries(dados.poseFixa)) obj.traverse(o => {
+      if (!o.name.startsWith(nome) || !o.parent) return;
+      qR.setFromEuler(new THREE.Euler(rx, ry, rz)); o.parent.getWorldQuaternion(qP); o.getWorldQuaternion(qN);
+      o.quaternion.copy(qP.invert().multiply(qR).multiply(qN)); o.updateMatrixWorld(true);
+    }); }
+  if (!dados.semAutoRig) autoRig(obj);               // modelo sem esqueleto ganha um simples (semAutoRig: desliga, ex.: Snorlax)
   const caixa = medirModelo(obj), tam = caixa.getSize(new THREE.Vector3()), centro = caixa.getCenter(new THREE.Vector3());
   // escalaModelo: corrige modelos cuja medição engana (ex.: Giratina) sem mudar a altura usada no combate
   // crescer: aumenta o Pokémon inteiro (visual e colisão) — usado nos que ficavam pequenos demais na tela
@@ -327,6 +349,13 @@ async function criarInstancia(id, progresso, fichaForcada){
     inst.asasBracos = !!dados.asasBracos;
     inst.ampAsa = dados.ampAsa ?? 1;          // < 1 = asas mais duras (ex.: Mega Latias, que é um "jato")
     inst.enrolar = dados.enrolar || null;     // serpentes (Rayquaza): curva fixa em cada pedaço da cauda
+    // com a cauda curvada o ponto mais baixo muda: mede de novo para os pés ficarem no chão (ex.: Arbok, Inteleon)
+    if (inst.enrolar && inst.ossos.length) {
+      for (let f = 0; f < 45; f++) animarInstancia(inst, 1/30, { vel: 0, voa: dados.voa });   // deixa a curva assentar
+      corpo.position.set(0, 0, 0); corpo.rotation.set(0, 0, 0); corpo.scale.set(1, 1, 1); raiz.updateMatrixWorld(true);
+      obj.traverse(o => { if (o.isSkinnedMesh) o.skeleton.update(); });
+      ajuste.position.y -= medirModelo(obj).min.y;
+    }
   }
   // emissivo original (para o "piscar" ao levar dano)
   for (const m of materiais) if (m.emissive) m.userData.emi0 = m.emissive.clone();

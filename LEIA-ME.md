@@ -1,3 +1,33 @@
+# Pokémon Arena V15 — 100 Pokémon nos dois jogos, Mega X/Y e cinemáticas no 2D
+
+## O que mudou na V15
+
+### Jogo 3D
+- **Snorlax ajustado:** o modelo usa a malha própria, sem o esqueleto criado automaticamente que deixava ele torto (`semAutoRig` em `js/dados.js`).
+- **Rayquaza novo:** outro modelo, menos enrolado e menor (`escalaModelo:.5`).
+- **Mega Charizard X com o modelo certo** (antes não aparecia) e **Mega Charizard Y / Mega Mewtwo X e Y** com modelos próprios.
+- **Escolha Mega X ou Y:** ao Mega Evoluir Charizard ou Mewtwo, a luta para e você escolhe a forma
+  (← → escolhe, golpe 1 = X, golpe 2 = Y, Mega/ataque confirma; escolhe sozinho depois de 8 s). A CPU sorteia.
+- **Mais 17 Pokémon (100 no total):** Arbok, Sandslash, Clefable, Primeape, Poliwrath, Onix, Celebi, Deoxys, Electivire, Glaceon,
+  Aegislash, Lycanroc, Kommo-o, Zeraora, Rillaboom, Inteleon e Zacian.
+- **Itens no mapa (`js/itens.js`):** a cada 11–17 s aparece um item (máx. 2): Fruta Oran (cura 25%), Ataque (+30% dano, 8 s),
+  Velocidade (+30%, 8 s), Escudo (bloqueia o próximo golpe que não seja Ultimate) e Energia (+40).
+- O esqueleto automático agora reconhece patas de quadrúpedes (`front_leg`, `back_leg`...) e caudas em corrente (`Bone001...`).
+
+### Jogo 2D (`jogo-2d/`)
+- **100 Pokémon** (56 novos, com sprites do PMD Sprite Collab) e ~40 golpes novos em `js/01-dados.js`.
+- **Tela de abertura:** logo animado, Pokébola que abre e solta um Pokémon e um desfile de Pokémon andando. Qualquer tecla ou toque entra.
+- **Pokémon saindo da Pokébola:** a bola é lançada, abre com raios de luz e o Pokémon sai como silhueta branca. Na troca a versão é rápida.
+- **Mega Evolução (tecla G ou botão MEGA):** 1 por time, liberada depois de 20 s de luta, custa 50 de energia.
+  A luta para, a câmera aproxima, entram barras de cinema e energia do arco-íris; no meio da cena a forma Mega aparece.
+  17 Megas usam sprite próprio (ex.: Mega Charizard X, Mega Mewtwo Y, Rayquaza, Kyogre/Groudon Primal); as outras ficam maiores com aura da cor.
+  Charizard e Mewtwo mostram a escolha **X ou Y**. A CPU também Mega Evolui.
+- **Finalização:** no último Pokémon, câmera lenta, tela sem cor, "K.O.!" gigante e câmera no vencedor antes do resultado.
+- Código novo em `jogo-2d/js/15-cinematicas.js` (tabela `MEGAS_2D` no topo).
+- **Removido:** a pasta `jogo-2d-arquivo-unico` e o `montar.py` — agora o 2D existe só em pastas (`jogo-2d/`).
+
+---
+
 # Pokémon Arena V14 — Abertura, Pokébola, Mega com câmera e finalização
 
 ## O que mudou na V14
@@ -127,6 +157,6 @@ Versão completa da V9 atualizada para **desktop e celular**, preservando os con
 
 ## Estrutura resumida
 
-`index.html` (Netlify), `css`, `js` (jogo), `modelos` (80 modelos carregados sob demanda), `jogo-2d`, `jogo-2d-arquivo-unico`, `assets-originais`, `efeitos-originais`, `docs`, `ferramentas`.
+`index.html` (Netlify), `css`, `js` (jogo), `modelos` (100 modelos carregados sob demanda), `jogo-2d`, `assets-originais`, `efeitos-originais`, `docs`, `ferramentas`.
 
 Pokémon e personagens pertencem a seus respectivos titulares. Consulte `docs/CREDITOS.md`.

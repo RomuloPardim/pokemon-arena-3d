@@ -79,6 +79,9 @@ const golpe = (nome, tipo, jeito, poder, recarga, extras) =>
    escalaModelo: corrige o tamanho visual de um modelo sem mudar a altura do combate
    enrolar : { y, x } = curva fixa por pedaço da cauda (serpentes como o Rayquaza)
    lendario: true = mostra a marca LENDÁRIO na seleção
+   letra / outra: Pokémon com duas Megas (X e Y) — "outra" é a segunda forma, com os mesmos campos
+   poseFixa: { nomeDoOsso: [x, y, z] } = gira uma parte do modelo uma vez ao carregar (ex.: braços do Deoxys)
+   semAutoRig: modelo sem esqueleto que deve ficar inteiro (sem esqueleto automático)
    ampAsa  : 0..1 = quanto as asas se mexem (1 = normal; .15 = quase rígidas)
    ocultarMalhas: /nome/ = esconde peças do modelo que não devem aparecer (e não contam no tamanho)
    ult     : nome e jeito da Ultimate (meteoro, tempestade, nova, rajada); visual opcional      */
@@ -135,7 +138,7 @@ const POKEMON = [
     { nome:'Tempestade Lendária', jeito:'tempestade' }, { voa:true }),
   P(143, 'Snorlax', 'normal', 160, 110, 87, 30, 2.6,
     [golpe('Mega Punch','normal','projetil',50,.8,{visual:'punho', tam:.55}), golpe('Hyper Beam','normal','raio',130,4,{largura:.9}), golpe('Earthquake','ground','area',100), golpe('Body Slam','normal','investida',85)],
-    { nome:'Soneca Esmagadora', jeito:'meteoro', tipo:'normal' }),
+    { nome:'Soneca Esmagadora', jeito:'meteoro', tipo:'normal' }, { semAutoRig:true }),
   P(151, 'Mew', 'psychic', 100, 100, 100, 100, 1.3,
     [golpe('Aura Sphere','fighting','projetil',55,.7), golpe('Psychic','psychic','chuva',100), golpe('Ancient Power','rock','projetil',60,1.4,{visual:'rocha3d', qtd:3, abertura:.2}), golpe('Psyshock','psychic','raio',80)],
     { nome:'Gênese', jeito:'rajada' }, { voa:true }),
@@ -289,7 +292,7 @@ const POKEMON = [
     { nome:'Lâminas do Abismo', jeito:'meteoro', tipo:'ground' }, { lendario:true }),
   P(384, 'Rayquaza', 'dragon flying', 105, 150, 90, 95, 3.4,
     [golpe('Dragon Breath','dragon','projetil',55,.6), golpe('Dragon Ascent','flying','investida',120,2.2), golpe('Hyper Beam','normal','raio',130,4,{largura:.9}), golpe('Draco Meteor','dragon','chuva',130,5)],
-    { nome:'Ascensão do Dragão', jeito:'meteoro', tipo:'dragon' }, { voa:true, lendario:true, escalaModelo:.85, enrolar:{ y:.4, x:-.13 } }),
+    { nome:'Ascensão do Dragão', jeito:'meteoro', tipo:'dragon' }, { voa:true, lendario:true, escalaModelo:.5, enrolar:{ y:.1, x:-.03 } }),   // V15: modelo novo, menor e menos enrolado
   P(385, 'Jirachi', 'steel psychic', 100, 100, 100, 100, 1.3,
     [golpe('Swift','normal','projetil',40,.6,{visual:'estrelas', qtd:3, abertura:.18, tam:.32}), golpe('Flash Cannon','steel','raio',80), golpe('Iron Head','steel','investida',80,1.2), golpe('Doom Desire','steel','chuva',120,4.5)],
     { nome:'Desejo Estelar', jeito:'rajada', tipo:'steel' }, { voa:true, lendario:true }),
@@ -329,6 +332,58 @@ const POKEMON = [
   P(800, 'Necrozma', 'psychic', 97, 113, 113, 79, 2.3,
     [golpe('Power Gem','rock','projetil',70,.8,{visual:'estrelas', tam:.4}), golpe('Psycho Cut','psychic','investida',70,1.1,{visual:'corte'}), golpe('Photon Geyser','psychic','raio',100,null,{largura:.8}), golpe('Calm Mind','psychic','buff',0)],
     { nome:'Raio Prismático', jeito:'rajada' }, { lendario:true }),
+  // ----- V15: 17 novos (total 100) -----
+  P(24, 'Arbok', 'poison', 60, 95, 69, 80, 2.0,
+    [golpe('Poison Fang','poison','investida',50,1.2,{visual:'mordida'}), golpe('Sludge Bomb','poison','projetil',85,.85,{tam:.5}), golpe('Gunk Shot','poison','chuva',115), golpe('Coil','poison','buff',0)],
+    { nome:'Bote Venenoso', jeito:'tempestade', tipo:'poison' }, { enrolar:{ y:0, x:-.15 } }),
+  P(28, 'Sandslash', 'ground', 75, 100, 110, 65, 1.5,
+    [golpe('Mud Shot','ground','projetil',55,.6,{visual:'pedra'}), golpe('Crush Claw','normal','investida',75,1.2,{visual:'garra'}), golpe('Earthquake','ground','area',100,null,{visual:'fissura'}), golpe('Stone Edge','rock','chuva',100,null,{visual:'espinhos'})],
+    { nome:'Tempestade de Areia', jeito:'tempestade', tipo:'ground' }),
+  P(36, 'Clefable', 'fairy', 95, 70, 73, 60, 1.6,
+    [golpe('Moonblast','fairy','projetil',95,.9,{visual:'lua'}), golpe('Meteor Mash','steel','investida',90,1.5,{visual:'punho'}), golpe('Dazzling Gleam','fairy','area',80), golpe('Calm Mind','psychic','buff',0)],
+    { nome:'Metrônomo', jeito:'nova', tipo:'fairy', visual:'estrelas' }),
+  P(57, 'Primeape', 'fighting', 65, 105, 60, 95, 1.3,
+    [golpe('Vacuum Wave','fighting','projetil',45,.5,{visual:'punho'}), golpe('Close Combat','fighting','investida',120,2.5,{visual:'punho'}), golpe('Stomping Tantrum','ground','area',75,null,{visual:'fissura'}), golpe('Bulk Up','fighting','buff',0)],
+    { nome:'Fúria Total', jeito:'rajada', tipo:'fighting' }),
+  P(62, 'Poliwrath', 'water fighting', 90, 95, 95, 70, 1.6,
+    [golpe('Water Gun','water','projetil',40), golpe('Dynamic Punch','fighting','investida',100,2,{visual:'punho'}), golpe('Hydro Pump','water','raio',110), golpe('Surf','water','area',90,null,{visual:'parede'})],
+    { nome:'Punho Maremoto', jeito:'nova', tipo:'water' }),
+  P(95, 'Onix', 'rock ground', 60, 75, 140, 70, 3.2,
+    [golpe('Rock Throw','rock','projetil',50,.7,{visual:'rocha3d'}), golpe('Iron Tail','steel','investida',100,1.8,{visual:'corte'}), golpe('Earthquake','ground','area',100,null,{visual:'fissura'}), golpe('Rock Slide','rock','chuva',75,null,{visual:'espinhos'})],
+    { nome:'Desabamento', jeito:'meteoro', tipo:'rock' }),
+  P(251, 'Celebi', 'psychic grass', 100, 100, 100, 100, 1.1,
+    [golpe('Magical Leaf','grass','projetil',60,.6,{visual:'folhas'}), golpe('Psychic','psychic','chuva',90), golpe('Leaf Storm','grass','area',110,null,{visual:'redemoinho'}), golpe('Nasty Plot','dark','buff',0)],
+    { nome:'Viagem no Tempo', jeito:'nova', tipo:'psychic' }, { voa:true, lendario:true }),
+  P(386, 'Deoxys', 'psychic', 70, 150, 70, 150, 1.9,
+    [golpe('Psyshock','psychic','projetil',70,.7), golpe('Superpower','fighting','investida',110,2.4,{visual:'punho'}), golpe('Psycho Boost','psychic','raio',120,null,{largura:.8}), golpe('Cosmic Power','psychic','buff',0)],
+    { nome:'Explosão Cósmica', jeito:'rajada', tipo:'psychic' }, { lendario:true, poseFixa:{ trLFeelerA1:[0,0,-1.2], trRFeelerA1:[0,0,1.2], trLFeelerB1:[0,0,-1.25], trRFeelerB1:[0,0,1.25] } }),
+  P(466, 'Electivire', 'electric', 75, 123, 67, 95, 1.9,
+    [golpe('Thunderbolt','electric','projetil',90,.9), golpe('Thunder Punch','electric','investida',75,1.2,{visual:'punho'}), golpe('Discharge','electric','area',80,null,{visual:'descarga'}), golpe('Thunder','electric','chuva',110)],
+    { nome:'Gigavolt', jeito:'tempestade', tipo:'electric' }),
+  P(471, 'Glaceon', 'ice', 65, 130, 110, 65, 1.1,
+    [golpe('Ice Shard','ice','projetil',40,.45,{visual:'gelo'}), golpe('Ice Beam','ice','raio',90), golpe('Icy Wind','ice','area',70,null,{visual:'redemoinho'}), golpe('Blizzard','ice','chuva',110,null,{visual:'espinhos'})],
+    { nome:'Era do Gelo', jeito:'nova', tipo:'ice' }),
+  P(681, 'Aegislash', 'steel ghost', 60, 140, 140, 60, 1.8,
+    [golpe('Shadow Ball','ghost','projetil',80,.8), golpe('Sacred Sword','fighting','investida',90,1.5,{visual:'corte'}), golpe('Flash Cannon','steel','raio',80), golpe("King's Shield",'steel','buff',0)],
+    { nome:'Lâmina Real', jeito:'rajada', tipo:'steel' }, { voa:true }),
+  P(745, 'Lycanroc', 'rock', 75, 115, 65, 112, 1.4,
+    [golpe('Rock Tomb','rock','projetil',60,.7,{visual:'rocha3d'}), golpe('Accelerock','rock','investida',60,.9,{visual:'garra'}), golpe('Crunch','dark','investida',80,1.4,{visual:'mordida'}), golpe('Stone Edge','rock','chuva',100,null,{visual:'espinhos'})],
+    { nome:'Uivo das Rochas', jeito:'meteoro', tipo:'rock' }),
+  P(784, 'Kommo-o', 'dragon fighting', 75, 110, 125, 85, 2.0,
+    [golpe('Focus Blast','fighting','projetil',100,1.2), golpe('Dragon Claw','dragon','investida',80,1.3,{visual:'garra'}), golpe('Clanging Scales','dragon','area',110,null,{visual:'som'}), golpe('Dragon Dance','dragon','buff',0)],
+    { nome:'Sinfonia das Escamas', jeito:'nova', tipo:'dragon' }),
+  P(807, 'Zeraora', 'electric', 88, 112, 75, 143, 1.5,
+    [golpe('Thunderbolt','electric','projetil',90,.85), golpe('Plasma Fists','electric','investida',100,1.6,{visual:'punho'}), golpe('Discharge','electric','area',80,null,{visual:'descarga'}), golpe('Thunder','electric','chuva',110)],
+    { nome:'Supertrovão Relâmpago', jeito:'rajada', tipo:'electric' }, { lendario:true }),
+  P(812, 'Rillaboom', 'grass', 100, 125, 90, 85, 2.0,
+    [golpe('Razor Leaf','grass','projetil',55,.55,{visual:'folhas', qtd:3, abertura:.15}), golpe('Wood Hammer','grass','investida',120,2.4,{visual:'punho'}), golpe('Drum Beating','grass','area',80,null,{visual:'som'}), golpe('Bulk Up','fighting','buff',0)],
+    { nome:'Show da Floresta', jeito:'nova', tipo:'grass' }),
+  P(818, 'Inteleon', 'water', 70, 125, 65, 120, 1.9,
+    [golpe('Snipe Shot','water','projetil',80,.7,{tam:.3}), golpe('Liquidation','water','investida',85,1.3,{visual:'corte'}), golpe('Hydro Pump','water','raio',110), golpe('Surf','water','area',90,null,{visual:'parede'})],
+    { nome:'Tiro Certeiro', jeito:'rajada', tipo:'water' }, { enrolar:{ y:0, x:.12 } }),
+  P(888, 'Zacian', 'fairy steel', 92, 130, 115, 138, 2.6,
+    [golpe('Moonblast','fairy','projetil',95,.9,{visual:'lua'}), golpe('Behemoth Blade','steel','investida',100,1.8,{visual:'corte'}), golpe('Dazzling Gleam','fairy','area',80), golpe('Swords Dance','normal','buff',0)],
+    { nome:'Espada Lendária', jeito:'meteoro', tipo:'fairy' }, { lendario:true }),
   // ----- Online: modelos grandes (10–16 MB) com animações de verdade -----
   P(658, 'Greninja', 'water dark', 72, 103, 69, 122, 1.9,
     [golpe('Water Shuriken','water','projetil',40,.45,{visual:'shuriken', qtd:2, abertura:.12}), golpe('Hydro Pump','water','raio',100), golpe('Night Slash','dark','investida',80,1.3,{visual:'corte'}), golpe('Surf','water','area',90)],
@@ -342,7 +397,7 @@ const POKEMON = [
 ];
 // Pokémon que ficavam pequenos na tela (medido pela área da silhueta, não só pela altura):
 // "crescer" aumenta o modelo e a colisão juntos. Ex.: o Articuno é quase todo cauda, então a altura enganava.
-const CRESCER = { 4: 1.1, 25: 1.11, 107: 1.39, 123: 1.12, 144: 1.75, 150: 1.41, 151: 1.25, 181: 1.22, 197: 1.2, 253: 1.33, 282: 1.23, 359: 1.2, 448: 1.19, 461: 1.17, 475: 1.5, 658: 1.2, 700: 1.15, 715: 1.37, 716: 1.41, 730: 1.44, 778: 1.5 };
+const CRESCER = { 24: 1.35, 251: 1.4, 386: 1.2, 471: 1.3, 784: 1.15, 807: 1.2, 818: 1.4, 4: 1.1, 25: 1.11, 107: 1.39, 123: 1.12, 144: 1.75, 150: 1.41, 151: 1.25, 181: 1.22, 197: 1.2, 253: 1.33, 282: 1.23, 359: 1.2, 448: 1.19, 461: 1.17, 475: 1.5, 658: 1.2, 700: 1.15, 715: 1.37, 716: 1.41, 730: 1.44, 778: 1.5 };
 for (const p of POKEMON) if (CRESCER[p.id]) p.crescer = CRESCER[p.id];
 
 const POR_ID = Object.fromEntries(POKEMON.map(p => [p.id, p]));
@@ -490,6 +545,24 @@ const IDENTIDADE = {
   791: { estilo: 'pesado', armadura: true, roteiro: 'meteoro' },
   792: { estilo: 'aereo', voo: true, teleporte: true, roteiro: 'ilusao' },
   800: { estilo: 'tecnico', contraForte: true, roteiro: 'esfera' },
+  // V15
+  24:  { estilo: 'agressivo', roteiro: 'tempestade' },
+  28:  { estilo: 'tecnico', roteiro: 'tempestade' },
+  36:  { estilo: 'sobrenatural', roteiro: 'nova' },
+  57:  { estilo: 'agressivo', roteiro: 'rajada' },
+  62:  { estilo: 'equilibrado', roteiro: 'onda' },
+  95:  { estilo: 'pesado', armadura: true, guardaForte: true, roteiro: 'meteoro' },
+  251: { estilo: 'sobrenatural', teleporte: true, voo: true, roteiro: 'ilusao' },
+  386: { estilo: 'sobrenatural', teleporte: true, roteiro: 'esfera' },
+  466: { estilo: 'agressivo', roteiro: 'tempestade' },
+  471: { estilo: 'rapido', roteiro: 'nova' },
+  681: { estilo: 'tecnico', guardaForte: true, contraForte: true, roteiro: 'rajada' },
+  745: { estilo: 'rapido', roteiro: 'meteoro' },
+  784: { estilo: 'pesado', armadura: true, roteiro: 'onda' },
+  807: { estilo: 'rapido', subsRapida: true, roteiro: 'tempestade' },
+  812: { estilo: 'pesado', armadura: true, roteiro: 'onda' },
+  818: { estilo: 'tecnico', roteiro: 'rajada' },
+  888: { estilo: 'rapido', contraForte: true, roteiro: 'meteoro' },
 };
 for (const p of POKEMON) Object.assign(p, { estilo: 'equilibrado', roteiro: 'nova' }, IDENTIDADE[p.id] || {});
 
@@ -501,7 +574,9 @@ for (const p of POKEMON) Object.assign(p, { estilo: 'equilibrado', roteiro: 'nov
    altura / escalaModelo / enrolar / asasBracos / voa = ajustes do modelo da Mega (se faltar, usa o do Pokémon) */
 const MEGAS = {
   3:   { nome: 'Mega Venusaur',   atk: 1.15, def: 1.30, vel: 1.00, cor: 0x7ac74c, modelo: 'mega-3' },
-  6:   { nome: 'Mega Charizard X',atk: 1.30, def: 1.15, vel: 1.05, cor: 0x3a8bff, modelo: null, tinta: { cor: 0x1e2128, forca: .88, brilho: 0x0f2f8a, intensidade: .3 } },
+  // Duas Megas (X e Y): "outra" é a segunda forma; na hora de Mega Evoluir o jogador escolhe
+  6:   { nome: 'Mega Charizard X',atk: 1.30, def: 1.15, vel: 1.05, cor: 0x3a8bff, modelo: 'mega-6x', letra: 'X', semAutoRig: true,
+         outra: { nome: 'Mega Charizard Y', atk: 1.35, def: 1.05, vel: 1.05, cor: 0xff8a2a, modelo: 'mega-6y', letra: 'Y', enrolar: { y: 0, x: .08 } } },
   9:   { nome: 'Mega Blastoise',  atk: 1.20, def: 1.25, vel: 1.00, cor: 0x6390f0, modelo: 'mega-9' },
   18:  { nome: 'Mega Pidgeot',    atk: 1.20, def: 1.10, vel: 1.20, cor: 0xa98ff3, modelo: 'mega-18' },
   65:  { nome: 'Mega Alakazam',   atk: 1.25, def: 1.05, vel: 1.15, cor: 0xf95587, modelo: 'mega-65' },
@@ -526,7 +601,8 @@ const MEGAS = {
   445: { nome: 'Mega Garchomp',   atk: 1.25, def: 1.15, vel: 1.00, cor: 0x6f35fc, modelo: 'mega-445' },
   448: { nome: 'Mega Lucario',    atk: 1.25, def: 1.05, vel: 1.15, cor: 0x3a8bff, modelo: 'mega-448' },
   475: { nome: 'Mega Gallade',    atk: 1.25, def: 1.10, vel: 1.10, cor: 0x7ac74c, modelo: 'mega-475' },
-  150: { nome: 'Mega Mewtwo Y',   atk: 1.25, def: 1.05, vel: 1.10, cor: 0xf95587, modelo: 'mega-150' },
+  150: { nome: 'Mega Mewtwo X',   atk: 1.35, def: 1.10, vel: 1.05, cor: 0x9a6bff, modelo: 'mega-150x', letra: 'X',
+         outra: { nome: 'Mega Mewtwo Y', atk: 1.25, def: 1.05, vel: 1.15, cor: 0xf95587, modelo: 'mega-150', letra: 'Y' } },
   // ----- novas (V12): Megas de Pokémon Legends Z-A e formas Primais -----
   26:  { nome: 'Mega Raichu X',    atk: 1.25, def: 1.05, vel: 1.15, cor: 0xffd84a, modelo: 'mega-26' },
   160: { nome: 'Mega Feraligatr',  atk: 1.25, def: 1.15, vel: 1.05, cor: 0x3a8bff, modelo: 'mega-160' },

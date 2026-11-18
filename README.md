@@ -42,7 +42,9 @@ Um projeto pessoal de desenvolvimento de jogos feito com **HTML, CSS, JavaScript
 
 ## ✨ Destaques do jogo
 
-- **83 Pokémon jogáveis**, sendo **22 lendários** (Arceus, Rayquaza, Kyogre, Groudon, Lugia, Ho-Oh, Dialga, Palkia, Giratina e outros).
+- **100 Pokémon jogáveis** nos dois jogos (3D e 2D), com mais de 20 lendários e míticos (Arceus, Rayquaza, Kyogre, Groudon, Lugia, Ho-Oh, Dialga, Palkia, Giratina, Zacian, Deoxys e outros).
+- **Mega Evolução com cinemática** nos dois jogos; Charizard e Mewtwo deixam escolher **Mega X ou Mega Y**.
+- **Itens no mapa** para coletar (cura, ataque, velocidade, escudo e energia).
 - **Modelos 3D animados por código**: o esqueleto de cada modelo é reconhecido e animado (andar, correr, voar, atacar), com movimento suavizado.
 - **Pokémon voadores voam de verdade**, e as aves batem as asas.
 - **Animação viva em todas as partes**: boca, pés, mãos e dedos se mexem, e penas, cabelo, roupa e barbatanas balançam com física de mola.

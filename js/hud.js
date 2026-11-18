@@ -43,7 +43,7 @@ function atualizarPaineis(forcar){
     if (!forcar && el._id === L.p.id && el._ativo === JOGO.ativo[t] && el._mega === !!L.mega) continue;
     el._id = L.p.id; el._ativo = JOGO.ativo[t]; el._mega = !!L.mega;
     el.querySelector('.ret img').src = ICONE(L.p.id);
-    el.querySelector('.nome b').textContent = L.mega ? MEGAS[L.p.id].nome : L.p.nome;
+    el.querySelector('.nome b').textContent = L.mega ? megaDe(L).nome : L.p.nome;
     el.querySelector('.tipos').innerHTML = L.p.tipos.map(tp => `<span style="background:${TYPES[tp][1]}">${TYPES[tp][0]}</span>`).join('') +
       `<span class="estilo">${ESTILOS_LUTA[L.p.estilo].nome}</span>`;
     // reserva (assistências)

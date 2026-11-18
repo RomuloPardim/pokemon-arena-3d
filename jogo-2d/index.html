@@ -10,8 +10,17 @@
 </head>
 <body>
 
+<!-- ABERTURA (V15) -->
+<section id="abertura" class="screen">
+  <div class="abCeu"></div>
+  <div class="abLogo">POKÉMON ARENA<small>REAL TIME · 2D</small></div>
+  <div class="abPalco"><img id="abPoke" alt=""><div id="abBola"><i class="cima"></i><i class="baixo"></i><i class="botao"></i></div></div>
+  <div id="abToque">PRESSIONE QUALQUER TECLA</div>
+  <div id="abFila"></div>
+</section>
+
 <!-- HOME -->
-<section id="home" class="screen">
+<section id="home" class="screen hidden">
   <div class="logo">POKÉMON ARENA<small>REAL TIME</small></div>
   <div class="wrap">
     <button class="bigbtn b-yel" id="btnTeam"><span>⚑ MONTAR EQUIPE</span><span id="teamCount">0/6</span></button>
@@ -68,11 +77,14 @@
     <div class="timer" id="timer" title="Pausar">3:00</div>
     <div class="team r" id="hudR"></div>
   </div>
-  <div class="help">WASD: mover • Mouse: mirar • Clique/1-4: golpes • Espaço: pular • Q: Ultimate • Retrato: trocar</div>
+  <div class="help">WASD: mover • Mouse: mirar • Clique/1-4: golpes • Espaço: pular • Q: Ultimate • G: Mega • Retrato: trocar</div>
   <div class="moves" id="moves"></div>
   <button class="jb" id="jumpBtn">⤴ PULO<span class="key">ESPAÇO</span><div class="cd"></div></button>
   <button id="ultBtn"><div class="fill"></div><span class="lbl2">★ ULTIMATE</span><span class="nm"></span><span class="key">Q</span></button>
+  <button id="megaBtn" class="hidden"><span>MEGA</span><span class="key">G</span></button>
   <div id="banner"></div>
+  <div id="escolhaMega" class="hidden"></div>
+  <div id="textoKO">K.O.!</div>
   <div id="buffs"></div>
   <div id="vs" class="hidden"></div>
 </section>
@@ -92,6 +104,7 @@
 <script src="js/11-efeitos.js"></script>
 <script src="js/12-batalha-logica.js"></script>
 <script src="js/13-ambiente.js"></script>
+<script src="js/15-cinematicas.js"></script>
 <script src="js/14-desenho-e-loop.js"></script>
 </body>
 </html>

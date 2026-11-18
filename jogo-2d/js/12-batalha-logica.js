@@ -41,6 +41,7 @@ joyEl.addEventListener('pointerup', joyEnd); joyEl.addEventListener('pointercanc
 if (!isTouch) joyEl.style.display = 'none';
 $('#jumpBtn').addEventListener('pointerdown', e => { e.preventDefault(); pularPedido = true; });
 $('#ultBtn').addEventListener('pointerdown', e => { e.preventDefault(); ultPedido = performance.now(); });
+$('#megaBtn').addEventListener('pointerdown', e => { e.preventDefault(); megaPedido = true; });
 
 // Lê teclado/mouse/toque do jogador 1 e devolve o que ele quer fazer neste quadro
 function lerEntradaJogador(me, foe){
@@ -119,6 +120,9 @@ function updateHud(){
     $('#jumpBtn .cd').style.height = (f.jumpCd > 0 ? f.jumpCd/2.2*100 : 0) + '%';
     $('#ultBtn .fill').style.height = f.en + '%';
     $('#ultBtn').classList.toggle('ready', f.en >= 100);
+    const mb = $('#megaBtn'), M = MEGAS_2D[f.p.id], usou = G.megaUsada[0];
+    mb.classList.toggle('hidden', !M || !!f.mega || usou);
+    if (M) { mb.classList.toggle('ready', podeMega(f) === true); mb.style.setProperty('--mc', M.cor); }
   }
   const bf = $('#buffs'); let h = '';
   if (f) { if (f.bAtk > 0) h += `<span style="background:#ff4d6a">⚔ ${Math.ceil(f.bAtk)}s</span>`; if (f.bSpd > 0) h += `<span style="background:#e0a800">➤ ${Math.ceil(f.bSpd)}s</span>`;
@@ -145,7 +149,7 @@ function togglePause(){
     $('#pMus').onclick = () => { S.musica = !S.musica; save(); $('#pMus').textContent = S.musica ? '🎵 Música ligada' : '🎵 Música desligada'; paintAudio(); };
   } else closeModal();
 }
-function quitBattle(){ G = null; closeModal(); held.fill(false); show('home'); renderHome(); }
+function quitBattle(){ fecharEscolha2D(); cv.classList.remove('ko'); G = null; closeModal(); held.fill(false); show('home'); renderHome(); }
 
 /* ----- Física / colisão ----- */
 function pushOut(f){
@@ -260,7 +264,7 @@ function hit(att, def, m, mult=1){
   let clima = 1;
   if (MAP.clima === 'chuva') clima = m.t === 'water' ? 1.2 : m.t === 'fire' ? .8 : 1;
   const crit = Math.random() < .0625;
-  const boost = att.bAtk > 0 ? 1.4 : 1;
+  const boost = (att.bAtk > 0 ? 1.4 : 1)*(att.megaMul ? att.megaMul.atk : 1)/(def.megaMul ? def.megaMul.def : 1);   // megaMul: Mega Evolução
   const dmg = Math.max(1, Math.round(m.p * (att.p.atk/def.p.def) * .42 * stab * e * rand(.9,1) * mult * dm * boost * cm * clima * (crit ? 1.5 : 1)));
   def.hp -= dmg; def.flash = .12; def.hurtT = .25;
   if (!def.windup && !def.dash && !(def.act && def.act.atk)) setAct(def, 'Hurt', .3);
@@ -324,6 +328,7 @@ function faint(f){
   shake(6); sfx('faint');
   if (MAP.id === 'estadio') { G.hype = 3; sfx('cheer'); }
   t.a = -1; t.pend = 1.4; t.last = [f.x, f.y];
+  if (!t.f.some(o => o.alive) && !G.over) { finalizacao2D(f); t.pend = 2.4; }   // V15: era o último → finalização
   G.proj = G.proj.filter(p => p.owner !== f);
 }
 
@@ -337,7 +342,7 @@ function setAct(f, name, maxDur, atk){
 }
 
 /* ----- Usar golpes ----- */
-function podeAgir(f){ return f.alive && f.st.stun <= 0 && f.mk.congelado <= 0 && !f.dash && !f.windup && !f.jump && !f.leap && !f.rush; }
+function podeAgir(f){ return f.alive && (!f.entrada || f.entrada.t > f.entrada.abre + .25) && f.st.stun <= 0 && f.mk.congelado <= 0 && !f.dash && !f.windup && !f.jump && !f.leap && !f.rush; }
 function useMove(f, i, a, tx, ty){
   const m = f.moves[i];
   if (f.cds[i] > 0 || !podeAgir(f)) return false;
@@ -798,6 +803,10 @@ function update(dtReal){
   if (G.slowT > 0) { G.slowT -= dtReal; dt *= .3; }
   updateAmbient(dtReal);
   if (G.hitstop > 0) { G.hitstop -= dt; updateFx(dt*.3); return; }
+  if (G.escolha) return;                                            // escolhendo Mega X ou Y
+  if (G.finalKO) G.finalKO.t += dtReal;
+  atualizarEntradas(dt);
+  if (G.megaCine) { atualizarMegaCine(dt); updateFx(dt); return; }   // a luta para durante a Mega Evolução
   G.clock = (G.clock || 0) + dt;
   if (!G.over) G.time -= dt;
   for (const s of G.sched) { s.t -= dt; if (s.t <= 0 && !s.done) { s.done = true; s.fn(); } }
@@ -808,11 +817,13 @@ function update(dtReal){
     if (!me.dash) me.aim = inp.aim;
     if (inp.pular) doJump(me, Math.hypot(inp.mx, inp.my) > .2 ? Math.atan2(inp.my, inp.mx) : me.dir);
     if (ultPedido) { if (useUlt(me, inp.aim, inp.tx, inp.ty) || performance.now() - ultPedido > 500) ultPedido = false; }
+    if (megaPedido) { megaPedido = false; pedirMega(me); }
     updateFighter(me, dt, inp.mx, inp.my);
     if (me.alive) for (let i=0;i<4;i++) if (inp.golpes[i]) useMove(me, i, inp.aim, inp.tx, inp.ty);
-  } else { pularPedido = false; ultPedido = false; }
+  } else { pularPedido = false; ultPedido = false; megaPedido = false; }
   const foe2 = active(1);
-  if (foe2 && !G.over) { updateAI(foe2, dt); if (foe2.alive) updateFighter(foe2, dt, foe2.ai.mx, foe2.ai.my); }
+  if (foe2 && !G.over) { updateAI(foe2, dt); if (foe2.alive) updateFighter(foe2, dt, foe2.ai.mx, foe2.ai.my);
+    if (foe2.alive && podeMega(foe2) === true && Math.random() < dt*.35) pedirMega(foe2); }   // a CPU também Mega Evolui
   for (const ti of [0,1]) {
     const t = G.teams[ti]; t.sw = Math.max(0, t.sw-dt);
     if (t.a === -1 && !G.over) {
@@ -876,6 +887,8 @@ function update(dtReal){
 function endBattle(winner, timeout){
   if (G.over) return;
   G.over = true; held.fill(false);
+  if (winner >= 0) G.vencedor = { f: active(winner) };               // câmera no vencedor
+  cv.classList.remove('ko');
   const g = G;
   setTimeout(() => sfx(winner === 0 ? 'win' : 'lose'), 600);
   setTimeout(() => {

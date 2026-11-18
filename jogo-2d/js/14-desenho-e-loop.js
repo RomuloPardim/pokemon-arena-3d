@@ -18,9 +18,12 @@ function drawSheetFrame(id, name, elapsed, rate, dir, x, feetY, alpha, loop=true
 // Desenha o Pokémon (sprite PMD de 8 direções). Devolve false se nada estiver pronto.
 function drawPoke(f, x, feetY, alpha, opts={}){
   const now = performance.now()/1000;
-  return drawSheetFrame(f.p.id, opts.name || f.animName, opts.el ?? (now - f.animStart), opts.rate ?? 1, opts.dir ?? f.dir, x, feetY, alpha, opts.loop ?? true);
+  let id = f.p.id, nm = opts.name || f.animName;
+  if (f.spr) { id = f.spr; if (!animInfo(id, nm)) nm = animInfo(id, 'Idle') ? 'Idle' : (id = f.p.id, nm); }   // forma Mega: sprite próprio
+  return drawSheetFrame(id, nm, opts.el ?? (now - f.animStart), opts.rate ?? 1, opts.dir ?? f.dir, x, feetY, alpha, opts.loop ?? true);
 }
 function drawFighter(f, now){
+  if (f.entrada && !f.entrada.abriu) return;          // ainda dentro da Pokébola
   let name;
   if (f.act && now < f.act.end) name = f.act.name;
   else { f.act = null;
@@ -33,7 +36,10 @@ function drawFighter(f, now){
   if (f.hidden) alpha = f.team === 0 ? .5 : .28;
   if (f.bAtk > 0 || f.windup || f.en >= 100) { ctx.globalCompositeOperation = 'lighter'; const col = f.windup ? (f.windup.ult ? TC(f.ult.t) : TC(f.moves[f.windup.i].t)) : f.bAtk > 0 ? '#ff5050' : TC(f.ult.t), s = 46 + Math.sin(now*12)*6;
     ctx.globalAlpha = (f.en >= 100 && !f.bAtk && !f.windup ? .3 : .55)*alpha; ctx.drawImage(glowTex(col), f.x - s, feetY - 22 - s, s*2, s*2); ctx.globalCompositeOperation = 'source-over'; }
+  if (f.megaCor) { ctx.globalCompositeOperation = 'lighter'; const s = 50 + Math.sin(now*6)*5;   // Mega sem sprite próprio: aura da cor
+    ctx.globalAlpha = .35*alpha; ctx.drawImage(glowTex(f.megaCor), f.x - s, feetY - 26 - s, s*2, s*2); ctx.globalCompositeOperation = 'source-over'; }
   ctx.save();
+  if (f.megaEscala) { ctx.translate(f.x, feetY); ctx.scale(f.megaEscala, f.megaEscala); ctx.translate(-f.x, -feetY); }
   if (f.spawnT > 0) { const k = 1 - f.spawnT/.5, sc = k < .7 ? k/.7*1.15 : 1.15 - (k-.7)/.3*.15; ctx.translate(f.x, feetY); ctx.scale(sc, sc); ctx.translate(-f.x, -feetY); }
   let rate = f.animName === 'Walk' ? f.animRate : 1;
   if (f.animName === 'Hop' && f.jump) { const hi = animInfo(f.p.id, 'Hop'); if (hi) rate = hi[4].reduce((a,b) => a+b, 0)/60/f.jump.dur; }
@@ -48,6 +54,9 @@ function drawFighter(f, now){
   if ((f.flash > 0 || f.spawnT > .25) && ok) { ctx.globalCompositeOperation = 'lighter';
     for (let i=0;i<2;i++) drawPoke(f, f.x, feetY, .7*alpha, {rate, loop});
     ctx.globalCompositeOperation = 'source-over'; }
+  const sil = Math.max(f.sil || 0, silhuetaMega(f));       // silhueta branca (Pokébola / Mega Evolução)
+  if (sil > 0 && ok) { ctx.filter = 'brightness(0) invert(1)'; drawPoke(f, f.x, feetY, sil, {rate, loop});
+    ctx.filter = 'none'; }
   ctx.restore(); ctx.globalAlpha = 1;
   if (f.mk.congelado > 0) { const h = Math.min(130, f.topH + 6), w = 70; ctx.fillStyle = 'rgba(170,230,255,.45)'; ctx.strokeStyle = '#e8fbff'; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.roundRect(f.x - w/2, feetY - h, w, h, 10); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#ffffff99'; ctx.fillRect(f.x - w/2 + 8, feetY - h + 8, 8, h*.5); }
@@ -340,10 +349,13 @@ function render(){
   if (!G) return;
   const now = performance.now()/1000;
   G.scale = clamp(VW > VH ? Math.min(VW/1150, VH/720) : Math.min(VW/620, VH/900), .45, 1.4);
+  const foco = focoCinematico();                          // V15: câmera das cinemáticas
+  G.zoom = (G.zoom || 1) + ((foco ? foco.zoom : 1) - (G.zoom || 1))*.08;
+  G.scale *= G.zoom;
   const me = active(0) || active(1);
-  const tgt = me ? {x:me.x, y:me.y} : (G.teams[0].last ? {x:G.teams[0].last[0], y:G.teams[0].last[1]} : {x:W/2,y:H/2});
+  const tgt = foco ? foco : me ? {x:me.x, y:me.y} : (G.teams[0].last ? {x:G.teams[0].last[0], y:G.teams[0].last[1]} : {x:W/2,y:H/2});
   G.cam.x += (tgt.x - G.cam.x)*.12; G.cam.y += (tgt.y - G.cam.y)*.12;
-  const hw = VW/2/G.scale, hh = VH/2/G.scale, mg = MARGEM*.85;
+  const hw = VW/2/G.scale, hh = VH/2/G.scale, mg = MARGEM*.85 + (G.zoom > 1.05 ? 200 : 0);
   const cx = hw*2 >= W + mg*2 ? W/2 : clamp(G.cam.x, hw - mg, W - hw + mg), cy = hh*2 >= H + mg*2 ? H/2 : clamp(G.cam.y, hh - mg, H - hh + mg);
   G.cam.x = cx; G.cam.y = cy;
   const shx = rand(-G.shake, G.shake), shy = rand(-G.shake, G.shake);
@@ -357,6 +369,7 @@ function render(){
   objs.sort((a,b) => a.y - b.y);
   const fs = [active(0), active(1)].filter(f => f && f.alive);
   for (const ob of objs) { if (ob.f) drawFighter(ob.f, now); else if (ob.d) drawDying(ob.d, now); else drawObstaculo(ob.o, fs); }
+  desenharAuraMega(now); desenharPokebolas(now);
   drawWarnFalls(now);
   for (const z of G.zones) drawZoneFall(z, now);
   for (const s of G.slashes) drawSlash(s);
@@ -372,7 +385,7 @@ function render(){
   drawDecor(now, 'luz');
   drawLighting(now, ox, oy);
   ctx.setTransform(DPR*G.scale, 0, 0, DPR*G.scale, DPR*ox, DPR*oy);
-  for (const ti of [0,1]) { const f = active(ti); if (f && f.alive) drawBars(f); }
+  for (const ti of [0,1]) { const f = active(ti); if (f && f.alive && !(f.entrada && !f.entrada.abriu)) drawBars(f); }
   ctx.textAlign = 'center';
   for (const t of G.texts) {
     const pop = t.pop < .12 ? 1 + (1 - t.pop/.12)*.6 : 1;
@@ -381,6 +394,7 @@ function render(){
   }
   ctx.globalAlpha = 1;
   ctx.setTransform(DPR,0,0,DPR,0,0);
+  desenharCinema2D(now);
   if (G.flash > 0) { ctx.fillStyle = `rgba(${G.flashCol},${Math.min(.5, G.flash*2)})`; ctx.fillRect(0,0,VW,VH); }
   if (G.time <= 10 && !G.over && G.started) { ctx.fillStyle = `rgba(255,40,70,${.08 + Math.sin(now*8)*.05})`; ctx.fillRect(0,0,VW,VH); }
   drawCine(now);
@@ -397,4 +411,5 @@ function loop(now){
   requestAnimationFrame(loop);
 }
 renderHome();
+iniciarAbertura2D();
 requestAnimationFrame(loop);

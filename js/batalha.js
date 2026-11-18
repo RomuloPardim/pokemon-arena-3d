@@ -71,7 +71,7 @@ function mover(L, dx, dz, dt){
   // dx,dz = direção desejada (comprimento 0..1)
   const gelo = !L.noAr && !L.p.voa && perigoEm(L.pos.x, L.pos.z) === 'gelo';
   const lama = !L.noAr && !L.p.voa && perigoEm(L.pos.x, L.pos.z) === 'lama';
-  const vMax = (lama ? .55 : 1)*L.velBase*(L.buffT > 0 ? 1.25 : 1)*(L.ataque && L.ataque.t < .5 ? .45 : 1)*(L.danoT > 0 ? .5 : 1)*(JOGO.regras.caos ? 1.15 : 1);
+  const vMax = (lama ? .55 : 1)*L.velBase*(L.buffT > 0 ? 1.25 : 1)*(L.itemVelT > 0 ? 1.3 : 1)*(L.ataque && L.ataque.t < .5 ? .45 : 1)*(L.danoT > 0 ? .5 : 1)*(JOGO.regras.caos ? 1.15 : 1);
   const acel = gelo ? 2.2 : 14;
   const preso = L.atordoado > 0 || L.lancado || L.caido > 0 || L.quebrado > 0;
   if (preso && !L.dash && !L.esquiva) {
@@ -540,12 +540,13 @@ function aplicarDano(atac, alvo, poder, tipo, nome, empurrao, op = {}){
   if (alvo.caido > 0 && !op.ult) return -1;                               // não bate em quem está no chão
   if (atac && alvo.esquiva && JOGO.tempo - alvo.esqInicio < COMBATE.janelaEsquiva && !op.ult) { esquivaPerfeita(alvo, atac); return -1; }
   if (alvo.inv > 0 && !op.ult) return -1;
+  if (atac && alvo.escudo && !op.ult) { quebrarEscudo(alvo); return -1; }    // item Escudo
   if (JOGO.regras.treino && alvo.time === 1 && JOGO.treino.invencivel) alvo.hp = alvo.hpMax;
   const ef = tipo ? effectiveness(tipo, alvo.p.tipos) : 1;
   let d;
   if (!atac) d = poder;      // dano do cenário (lava)
   else {
-    const stab = tipo && atac.p.tipos.includes(tipo) ? 1.2 : 1, buff = atac.buffT > 0 ? 1.4 : 1;
+    const stab = tipo && atac.p.tipos.includes(tipo) ? 1.2 : 1, buff = (atac.buffT > 0 ? 1.4 : 1)*(atac.itemAtkT > 0 ? 1.3 : 1);   // itemAtkT: item Ataque X
     const dif = JOGO.controle[atac.time] === 'ia' && JOGO.controle[1 - atac.time] === 'jogador' ? JOGO.dif.dano : 1;
     d = poder*.56*Math.sqrt(atac.atk/alvo.def)*ef*stab*buff*dif*rnd(.92, 1.08);
     // combo longo: cada golpe a mais tira menos (evita combos devastadores)

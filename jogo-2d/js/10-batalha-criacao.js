@@ -59,7 +59,9 @@ addEventListener('resize', resize); resize();
 const FX_LEVE = () => S.fx === 'leve';
 
 /* ----- Sprites andando (PMD Sprite Collab) ----- */
-const PMD_URL = (id, anim) => `https://raw.githubusercontent.com/PMDCollab/SpriteCollab/master/sprite/${String(id).padStart(4,'0')}/${anim}-Anim.png`;
+// id pode ser "6/0001" = forma (ex.: Mega Charizard X) dentro da pasta do Pokémon
+const PMD_URL = (id, anim) => { const [n, forma] = String(id).split('/');
+  return `https://raw.githubusercontent.com/PMDCollab/SpriteCollab/master/sprite/${n.padStart(4,'0')}/${forma ? forma + '/' : ''}${anim}-Anim.png`; };
 const sheetCache = {};
 function getSheet(id, src){
   const k = id + '/' + src;
@@ -77,7 +79,9 @@ const dirRow = a => DIR_ROW[((Math.round(a/(Math.PI/4)) % 8) + 8) % 8];
 
 function preloadSprites(p){
   for (const n of ['Idle','Walk','Attack','Shoot','Charge','Hurt','Hop','Rotate','Strike']) { const i = animInfo(p.id, n); if (i) getSheet(p.id, i[0]); }
-  getImg(p.id);
+  if (typeof p.id === 'number') getImg(p.id);
+  const M = typeof MEGAS_2D !== 'undefined' && MEGAS_2D[p.id];          // já deixa a Mega carregando
+  if (M) for (const f of [M, M.outra]) if (f && f.spr) for (const n of ['Idle','Walk','Attack']) { const i = animInfo(f.spr, n); if (i) getSheet(f.spr, i[0]); }
 }
 /* ----- Terreno ----- */
 function terrainAt(x, y){
@@ -112,7 +116,7 @@ function mkFighter(p, team){
     bAtk:0, bSpd:0, shield:false, hidden:false, reveal:0, terr:null, dmg:0, en:0, ult:ultOf(p), lastMove:null,
     act:null, animName:'Idle', animStart:0, animRate:1,
     topH: idle ? (idle[2]/2 + 8)*SPR : 70, shadow: [12,16,22][PMD[p.id] ? PMD[p.id].sh : 1] || 16,
-    lev: p.types.includes('flying') || p.types.includes('ghost') || p.id === 151,
+    lev: p.types.includes('flying') || p.types.includes('ghost') || [151, 251, 380, 381, 385, 386, 491, 800].includes(p.id),   // flutuam
     speed:150 + p.spe*1.5, ai:{t:0, mx:0, my:0, strafe:1, strafeT:0, lastX:W/2, lastY:H/2, swT:0} };
 }
 function prepObstacles(){
@@ -139,8 +143,9 @@ function startBattle(){
     amb:[], warns:[], fields:[], fires:[], vines:[], burnt:[], tempTerr:[], traps:[], clones:[], recalls:[], sched:[],
     ev:null, evT:rand(15, 21), clock:0, evIdx:0, tide:0, hype:0, slowT:0, cine:null, dark:0, fog:0, wind:0,
     over:false, paused:true, started:false, stats:{dealt:[0,0], ko:[0,0], combos:[0,0], perfeitas:[0,0], ults:[0,0]}, cam:{x:W/2,y:H/2}, shake:0,
-    diff:DIFF[S.diff], scale:1
+    diff:DIFF[S.diff], scale:1, megaUsada:[false,false], megaCine:null, escolha:null, finalKO:null, vencedor:null
   };
+  cv.classList.remove('ko');
   G.teams = [ {f:mine.map(p => mkFighter(p,0)), a:-1, sw:0, pend:0},
               {f:foe.map(p => mkFighter(p,1)), a:-1, sw:0, pend:0} ];
   bringOut(0,0,250,H/2,true); bringOut(1,0,W-250,H/2,true);
@@ -174,10 +179,8 @@ function bringOut(ti, idx, x, y, silent){
   f.mvx = f.mvy = 0; f.spawnT = .5; f.act = null;
   f.aim = f.dir = ti ? Math.PI : 0;
   pushOut(f);
-  for (let i=0;i<16;i++){ const a = i/16*Math.PI*2; P({kind:'spark', x:f.x, y:f.y-20, vx:Math.cos(a)*260, vy:Math.sin(a)*260, t:.3, size:3, col:i%2?'#ff4d6a':'#ffffff'}); }
-  P({kind:'ring', x:f.x, y:f.y-20, col:'#ffffff', t:.35, size:10, size2:80, vx:0, vy:0});
-  P({kind:'impact', x:f.x, y:f.y-20, col:'#ffffff', t:.25, size:90, rot:0});
-  sfx('spawn');
+  iniciarEntrada(f, !!G.started);          // V15: Pokébola lançada; o Pokémon sai quando ela abre
+  sfx('recall');
   if (!silent) floatText(f.x, f.y-90, (ti ? 'Rival: ' : 'Vai, ') + f.p.name + '!', '#fff', 18);
 }
 // Troca: animação de volta para a pokébola, entrada com impacto e bônus de "Troca Tática"

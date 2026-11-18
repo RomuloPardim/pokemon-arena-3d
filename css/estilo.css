@@ -368,3 +368,17 @@ button { -webkit-touch-callout: none; }
   75% { opacity: 1; transform: scale(1) rotate(-4deg); } 100% { opacity: 0; transform: scale(1.5) rotate(-4deg); } }
 body.ko #palco canvas { filter: saturate(.35) contrast(1.15); transition: filter .25s; }
 #palco canvas { transition: filter .6s; }
+
+/* ===== V15: escolha Mega X / Mega Y ===== */
+#escolhaMega { position: fixed; inset: 0; z-index: 32; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+  background: radial-gradient(circle, #0a1030cc, #02040ccc); backdrop-filter: blur(3px); }
+#escolhaMega.hidden { display: none; }
+#escolhaMega h3 { font-family: 'Press Start 2P', monospace; font-size: clamp(14px, 2.4vw, 26px); color: #ffd84a; text-shadow: 0 3px 0 #000; margin: 0; }
+#escolhaMega .opcoes { display: flex; gap: clamp(14px, 4vw, 48px); }
+.opMega { width: clamp(130px, 20vw, 220px); aspect-ratio: 3/4; border-radius: 18px; border: 3px solid var(--c); cursor: pointer; color: #fff;
+  background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--c) 70%, #fff) 0%, var(--c) 35%, #0b0f22 80%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; transition: transform .15s, box-shadow .15s; opacity: .7; }
+.opMega b { font-family: 'Press Start 2P', monospace; font-size: clamp(40px, 7vw, 84px); text-shadow: 0 5px 0 #0008, 0 0 24px var(--c); }
+.opMega span { font-weight: 800; font-size: clamp(12px, 1.5vw, 16px); text-align: center; padding: 0 8px; }
+.opMega.sel, .opMega:hover { transform: scale(1.1); opacity: 1; box-shadow: 0 0 40px var(--c), 0 0 0 4px #fff; }
+#escolhaMega .dica { color: #cfe0ff; font-size: 13px; margin: 0; }
