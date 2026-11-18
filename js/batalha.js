@@ -669,10 +669,11 @@ function atualizarLutador(L, dt){
       L.dash.acertou = true; L.dash = null; acertouUlt(L, A);
     } else if (A && A.vivo && Math.hypot(A.pos.x - L.pos.x, A.pos.z - L.pos.z) < A.raio + L.raio + .5) {
       if (L.dash.g.dragao) { const p = centroDe(A); onda(A.pos.x, A.pos.z, 7, 0x6a4dff, .5); ondaDeChoque(p, 1); flash('brilho', 0x6a4dff, p.x, p.y, p.z, 6, .35, 0, .6); zoomImpacto(.5); }
-      L.dash.acertou = true; aplicarDano(L, A, L.dash.g.poder, L.dash.g.tipo, L.dash.g.nome, new THREE.Vector3(L.dash.dx, 0, L.dash.dz), L.dash.g.equipe ? { final: 'lancar' } : {});
-      if (L.dash.g.equipe) { const dono = lutador(L.time); dono.posLancar = 1; }
-      efeitoContato(L.dash.g, new THREE.Vector3((A.pos.x + L.pos.x)/2, A.y + A.altura*.5, (A.pos.z + L.pos.z)/2)); tremer(.3);
-      L.dash.t = Math.min(L.dash.t, .05);
+      const D = L.dash;                     // V19: o dano pode encerrar o avanço (L.dash = null) — guarda antes
+      D.acertou = true; aplicarDano(L, A, D.g.poder, D.g.tipo, D.g.nome, new THREE.Vector3(D.dx, 0, D.dz), D.g.equipe ? { final: 'lancar' } : {});
+      if (D.g.equipe) { const dono = lutador(L.time); dono.posLancar = 1; }
+      efeitoContato(D.g, new THREE.Vector3((A.pos.x + L.pos.x)/2, A.y + A.altura*.5, (A.pos.z + L.pos.z)/2)); tremer(.3);
+      D.t = Math.min(D.t, .05);
     }
   }
   if (L.dash && !L.dash.acertou) {

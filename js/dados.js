@@ -90,7 +90,7 @@ const POKEMON = [
   // ----- Kanto -----
   P(6, 'Charizard', 'fire flying', 78, 109, 82, 100, 2.3,
     [golpe('Ember','fire','projetil',40), golpe('Flamethrower','fire','raio',85), golpe('Heat Wave','fire','area',90), golpe('Dragon Rush','dragon','investida',95)],
-    { nome:'Inferno Ancestral', jeito:'meteoro' }, { voa:true }),
+    { nome:'Inferno Ancestral', jeito:'meteoro' }, { voa:true, fogoCauda:{ osso:/^EndTail\d/, tam:.36 }, escalaOssos:[[/^Tail7_/, .12]] }),   // V19: fogo de verdade na cauda
   P(9, 'Blastoise', 'water', 79, 85, 105, 78, 2.0,
     [golpe('Water Gun','water','raio',45,1.4,{visual:'jato'}), golpe('Hydro Pump','water','raio',100,null,{largura:.7}), golpe('Surf','water','area',90), golpe('Rapid Spin','normal','investida',70)],
     { nome:'Maremoto', jeito:'nova' }),
@@ -102,7 +102,7 @@ const POKEMON = [
     { nome:'Esquadrão Squirtle', jeito:'nova' }),
   P(25, 'Pikachu', 'electric', 60, 90, 50, 120, 1.35,
     [golpe('Thunder Shock','electric','projetil',40), golpe('Thunderbolt','electric','raio',90), golpe('Thunder','electric','chuva',110), golpe('Quick Attack','normal','investida',60,1.1)],
-    { nome:'Gigavolt', jeito:'tempestade' }),
+    { nome:'Gigavolt', jeito:'tempestade' }, { rotModelo:[-1.35, 0, 0] }),   // V19: o modelo vinha deitado
   P(94, 'Gengar', 'ghost poison', 60, 130, 70, 110, 1.7,
     [golpe('Shadow Ball','ghost','projetil',60,.8,{tam:.55}), golpe('Dark Pulse','dark','raio',80), golpe('Sludge Wave','poison','area',95,null,{visual:'parede'}), golpe('Hypnosis','psychic','chuva',70)],
     { nome:'Pesadelo Eterno', jeito:'tempestade' }),
@@ -129,7 +129,7 @@ const POKEMON = [
     { nome:'Choque Supremo', jeito:'tempestade' }),
   P(136, 'Flareon', 'fire', 65, 130, 85, 65, 1.4,
     [golpe('Ember','fire','projetil',40), golpe('Flamethrower','fire','raio',90), golpe('Flare Blitz','fire','investida',120,2), golpe('Fire Spin','fire','area',85)],
-    { nome:'Chama Fofa', jeito:'meteoro' }),
+    { nome:'Chama Fofa', jeito:'meteoro' }, { rotModelo:[0, Math.PI, 0] }),   // V19: estava andando de costas
   P(144, 'Articuno', 'ice flying', 90, 95, 112, 85, 2.0,
     [golpe('Ice Shard','ice','projetil',40,.5,{qtd:2, abertura:.14}), golpe('Ice Beam','ice','raio',90), golpe('Blizzard','ice','area',110,4.5,{raio:6.5}), golpe('Hurricane','flying','chuva',110)],
     { nome:'Era do Gelo', jeito:'tempestade' }, { voa:true, asasBracos:true, enrolar:{ y:0, x:.09 } }),
@@ -292,7 +292,7 @@ const POKEMON = [
     { nome:'Lâminas do Abismo', jeito:'meteoro', tipo:'ground' }, { lendario:true }),
   P(384, 'Rayquaza', 'dragon flying', 105, 150, 90, 95, 3.4,
     [golpe('Dragon Breath','dragon','projetil',55,.6), golpe('Dragon Ascent','flying','investida',120,2.2), golpe('Hyper Beam','normal','raio',130,4,{largura:.9}), golpe('Draco Meteor','dragon','chuva',130,5)],
-    { nome:'Ascensão do Dragão', jeito:'meteoro', tipo:'dragon' }, { voa:true, lendario:true, escalaModelo:.5, enrolar:{ y:.1, x:-.03 } }),   // V15: modelo novo, menor e menos enrolado
+    { nome:'Ascensão do Dragão', jeito:'meteoro', tipo:'dragon' }, { voa:true, lendario:true, escalaModelo:.38, enrolar:{ y:.2, x:-.03 } }),   // V19: menor e um pouco mais enrolado
   P(385, 'Jirachi', 'steel psychic', 100, 100, 100, 100, 1.3,
     [golpe('Swift','normal','projetil',40,.6,{visual:'estrelas', qtd:3, abertura:.18, tam:.32}), golpe('Flash Cannon','steel','raio',80), golpe('Iron Head','steel','investida',80,1.2), golpe('Doom Desire','steel','chuva',120,4.5)],
     { nome:'Desejo Estelar', jeito:'rajada', tipo:'steel' }, { voa:true, lendario:true }),
@@ -350,7 +350,7 @@ const POKEMON = [
     { nome:'Punho Maremoto', jeito:'nova', tipo:'water' }),
   P(95, 'Onix', 'rock ground', 60, 75, 140, 70, 3.2,
     [golpe('Rock Throw','rock','projetil',50,.7,{visual:'rocha3d'}), golpe('Iron Tail','steel','investida',100,1.8,{visual:'corte'}), golpe('Earthquake','ground','area',100,null,{visual:'fissura'}), golpe('Rock Slide','rock','chuva',75,null,{visual:'espinhos'})],
-    { nome:'Desabamento', jeito:'meteoro', tipo:'rock' }),
+    { nome:'Desabamento', jeito:'meteoro', tipo:'rock' }, { rotModelo:[0, Math.PI, 0] }),   // V19: estava andando de costas
   P(251, 'Celebi', 'psychic grass', 100, 100, 100, 100, 1.1,
     [golpe('Magical Leaf','grass','projetil',60,.6,{visual:'folhas'}), golpe('Psychic','psychic','chuva',90), golpe('Leaf Storm','grass','area',110,null,{visual:'redemoinho'}), golpe('Nasty Plot','dark','buff',0)],
     { nome:'Viagem no Tempo', jeito:'nova', tipo:'psychic' }, { voa:true, lendario:true }),
@@ -402,6 +402,12 @@ for (const p of POKEMON) if (CRESCER[p.id]) p.crescer = CRESCER[p.id];
 
 const POR_ID = Object.fromEntries(POKEMON.map(p => [p.id, p]));
 const ICONE = id => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${id}.png`;
+// V16: sprite animado (o mesmo da seleção do jogo 2D — renderizado dos jogos 3D, estilo Pokémon Showdown)
+const ANIMADO = id => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/${id}.gif`;
+// retrato usado nos menus e no HUD; Configurações → Retratos escolhe entre animado e desenho HOME
+const RETRATO = id => (typeof S !== 'undefined' && S.retratos === 'home') ? ICONE(id) : ANIMADO(id);
+// se o animado falhar, troca pelo desenho HOME
+function retratoErro(img){ if (img.dataset.caiu) { img.style.visibility = 'hidden'; return; } img.dataset.caiu = 1; img.src = ICONE(+img.dataset.id); }
 const URL_MODELO_ONLINE = id => `https://raw.githubusercontent.com/Sudhanshu-Ambastha/Pokemon-3D/main/models/glb/regular/${id}.glb`;
 
 /* ----- Mapas -----
@@ -576,7 +582,8 @@ const MEGAS = {
   3:   { nome: 'Mega Venusaur',   atk: 1.15, def: 1.30, vel: 1.00, cor: 0x7ac74c, modelo: 'mega-3' },
   // Duas Megas (X e Y): "outra" é a segunda forma; na hora de Mega Evoluir o jogador escolhe
   6:   { nome: 'Mega Charizard X',atk: 1.30, def: 1.15, vel: 1.05, cor: 0x3a8bff, modelo: 'mega-6x', letra: 'X', semAutoRig: true,
-         outra: { nome: 'Mega Charizard Y', atk: 1.35, def: 1.05, vel: 1.05, cor: 0xff8a2a, modelo: 'mega-6y', letra: 'Y', enrolar: { y: 0, x: .08 } } },
+         outra: { nome: 'Mega Charizard Y', atk: 1.35, def: 1.05, vel: 1.05, cor: 0xff8a2a, modelo: 'mega-6y', letra: 'Y',
+           ocultarMalhas: /^Object_(9|10)$/, fogoCauda: { osso: /^EndTail\d/, tam: .32 }, escalaOssos: [[/^Tail5_/, .78]] } },   // V19: cauda menor e solta, fogo de verdade
   9:   { nome: 'Mega Blastoise',  atk: 1.20, def: 1.25, vel: 1.00, cor: 0x6390f0, modelo: 'mega-9' },
   18:  { nome: 'Mega Pidgeot',    atk: 1.20, def: 1.10, vel: 1.20, cor: 0xa98ff3, modelo: 'mega-18' },
   65:  { nome: 'Mega Alakazam',   atk: 1.25, def: 1.05, vel: 1.15, cor: 0xf95587, modelo: 'mega-65' },
@@ -597,7 +604,7 @@ const MEGAS = {
   376: { nome: 'Mega Metagross',  atk: 1.20, def: 1.20, vel: 1.10, cor: 0xb7b7ce, modelo: 'mega-376' },
   380: { nome: 'Mega Latias',     atk: 1.20, def: 1.20, vel: 1.05, cor: 0xa66bff, modelo: 'mega-380', asasBracos: true, ampAsa: .15 },
   381: { nome: 'Mega Latios',     atk: 1.25, def: 1.15, vel: 1.05, cor: 0xa66bff, modelo: 'mega-381', asasBracos: true, ampAsa: .15 },
-  384: { nome: 'Mega Rayquaza',   atk: 1.25, def: 1.10, vel: 1.10, cor: 0x3ddc84, modelo: 'mega-384', escalaModelo: .35 },
+  384: { nome: 'Mega Rayquaza',   atk: 1.25, def: 1.10, vel: 1.10, cor: 0x3ddc84, modelo: 'mega-384', escalaModelo: .23, enrolar: { y: .2, x: -.03 } },   // V19: menor (antes saía da câmera)
   445: { nome: 'Mega Garchomp',   atk: 1.25, def: 1.15, vel: 1.00, cor: 0x6f35fc, modelo: 'mega-445' },
   448: { nome: 'Mega Lucario',    atk: 1.25, def: 1.05, vel: 1.15, cor: 0x3a8bff, modelo: 'mega-448' },
   475: { nome: 'Mega Gallade',    atk: 1.25, def: 1.10, vel: 1.10, cor: 0x7ac74c, modelo: 'mega-475' },

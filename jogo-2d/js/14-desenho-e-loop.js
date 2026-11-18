@@ -411,5 +411,6 @@ function loop(now){
   requestAnimationFrame(loop);
 }
 renderHome();
+if (!isTouch) { atualizarDicas(); $('#btnCtrl').onclick = () => abrirControles(); } else $('#btnCtrl').classList.add('hidden');
 iniciarAbertura2D();
 requestAnimationFrame(loop);

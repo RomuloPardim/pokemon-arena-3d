@@ -47,7 +47,7 @@ function desenharSelecao(){
   const grade = $('#selGrade');
   if (!grade.children.length) {
     grade.innerHTML = POKEMON.map((p, i) => `<button class="carta ${p.online ? 'online' : ''} ${p.lendario ? 'lendario' : ''}" data-i="${i}">
-      <img src="${ICONE(p.id)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><b>${p.nome}</b>
+      <img class="retr" src="${RETRATO(p.id)}" data-id="${p.id}" alt="" loading="lazy" onerror="retratoErro(this)"><b>${p.nome}</b>
       <div class="tipos">${p.tipos.map(t => `<span style="background:${TYPES[t][1]}">${TYPES[t][0]}</span>`).join('')}</div>
       <small>${ESTILOS_LUTA[p.estilo].nome}</small>${p.online ? '<em>online</em>' : p.lendario ? '<em class="lend">LENDÁRIO</em>' : ''}<i class="c0">J1</i><i class="c1">J2</i></button>`).join('');
     grade.querySelectorAll('.carta').forEach(c => {
@@ -70,7 +70,7 @@ function desenharPainelSelecao(t){
   el.classList.remove('hidden');
   const pads = controles();
   const disp = ctrl === 'jogador' ? (pads[t] ? `Controle ${t + 1}` : 'Teclado') : ctrl === 'boneco' ? 'Boneco de treino' : 'CPU';
-  const slots = Array.from({ length: S.tamanhoTime }, (_, i) => { const id = SEL.times[t][i]; return id ? `<div class="slot"><img src="${ICONE(id)}" alt=""><span>${POR_ID[id].nome}</span></div>` : `<div class="slot vazio">${i + 1}</div>`; }).join('');
+  const slots = Array.from({ length: S.tamanhoTime }, (_, i) => { const id = SEL.times[t][i]; return id ? `<div class="slot"><img class="retr" src="${RETRATO(id)}" data-id="${id}" alt="" onerror="retratoErro(this)"><span>${POR_ID[id].nome}</span></div>` : `<div class="slot vazio">${i + 1}</div>`; }).join('');
   const n = t;
   const dica = ctrl === 'jogador' ? `${rotulo(n, 'pulo')} escolher • ${rotulo(n, 'esquiva')} tirar • ${rotulo(n, 'golpe0')} aleatório • ${rotulo(n, 'pausa')} pronto` : 'clique nas cartas para montar a equipe';
   el.innerHTML = `<h3 style="color:${COR_TIME[t]}">${ctrl === 'jogador' ? 'JOGADOR ' + (t + 1) : disp}<small>${ctrl === 'jogador' ? disp : ''}</small></h3>
@@ -184,6 +184,10 @@ function montarConfig(){
   seg('#segVib', 'vibracao', null, v => v === 'true'); seg('#segSom', 'som', v => { somLigado = v; }, v => v === 'true');
   seg('#segMus', 'musica', v => tocarMusica(v && EM_BATALHA()), v => v === 'true');
   seg('#segP2', 'p2Teclado', null, v => v === 'true');
+  seg('#segVisual', 'visual', v => guardar.set('visualV18', v));   // vale a partir da próxima luta
+  seg('#segRetratos', 'retratos', () => {            // troca todos os retratos já desenhados
+    document.querySelectorAll('img.retr').forEach(im => { delete im.dataset.caiu; im.src = RETRATO(+im.dataset.id); });
+  });
 }
 function seg(sel, chave, aoMudar, conv = v => v){
   const el = $(sel); if (!el) return;

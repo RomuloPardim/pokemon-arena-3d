@@ -295,6 +295,10 @@ async function criarInstancia(id, progresso, fichaForcada){
     const novos = lista.map(m => { const c = m.clone(); materiais.push(c); return c; });
     o.material = Array.isArray(o.material) ? novos : novos[0];
   });
+  // V19 rotModelo: [x, y, z] gira o modelo inteiro antes de medir (ex.: Pikachu deitado, Flareon/Onix virados para trás)
+  if (dados.rotModelo) { obj.rotation.set(...dados.rotModelo); obj.updateMatrixWorld(true); }
+  // V19 escalaOssos: [[/nome/, fator]] encolhe uma parte a partir de um osso (ex.: cauda comprida da Mega Charizard Y)
+  if (dados.escalaOssos) { obj.traverse(o => { if (!o.isBone) return; for (const [re, k] of dados.escalaOssos) if (re.test(o.name)) o.scale.multiplyScalar(k); }); obj.updateMatrixWorld(true); }
   // poseFixa: gira um nó do modelo uma vez (no espaço do modelo), ex.: abaixar os braços-fita do Deoxys
   if (dados.poseFixa) { obj.updateMatrixWorld(true); const qR = new THREE.Quaternion(), qP = new THREE.Quaternion(), qN = new THREE.Quaternion();
     for (const [nome, [rx, ry, rz]] of Object.entries(dados.poseFixa)) obj.traverse(o => {
@@ -359,6 +363,9 @@ async function criarInstancia(id, progresso, fichaForcada){
   }
   // emissivo original (para o "piscar" ao levar dano)
   for (const m of materiais) if (m.emissive) m.userData.emi0 = m.emissive.clone();
+  if (dados.fogoCauda) montarFogo(inst, dados.fogoCauda);   // V19: fogo de verdade na cauda
+  // V17: sprite animado no lugar do modelo (Configurações → Visual da luta). Megas com modelo próprio usam o sprite da forma.
+  if (usarSprites()) { const sid = dados.spriteId || (typeof id === 'number' ? id : null); if (sid) await vestirSprite(inst, sid); }
   return inst;
 }
 
@@ -389,6 +396,8 @@ function tocar(inst, nome, fade = .18, vel = 1){
 
 /* ----- Atualiza a animação a cada quadro -----
    e = { vel: 0..1 (quão rápido anda), noAr, ataque: {t: 0..1, jeito} | null, dano: 0..1, desmaio: 0..1 } */
+/* V18: quanto cada parte "solta" mexe (1 = padrão). Aumente para ficar mais vivo, diminua se algum modelo exagerar. */
+const VIDA = { cauda: 1.25, orelha: 1.2, apendice: 1.3, cabeca: 1.15, inercia: 1.3 };
 function animarInstancia(inst, dt, e){
   inst.t += dt;
   const t = inst.t, vel = e.vel || 0;
@@ -492,13 +501,16 @@ function animarInstancia(inst, dt, e){
       const ld = r.lado || 1;
       if (r.parte === 'apendice') {        // mola amortecida: balança sozinho e "atrasa" quando o corpo mexe
         const p = r.prof, solto = 1 + p*.35;
-        let ax = Math.sin(t*1.7 + r.fase - p*.7)*(.045 + p*.02), az = Math.sin(t*1.25 + r.fase*1.3 - p*.5)*(.035 + p*.015)*ld;
+        // V18: balanço maior e com dois ritmos (fica menos "duro"); a ponta mexe mais que a base
+        let ax = (Math.sin(t*1.7 + r.fase - p*.7)*(.08 + p*.035) + Math.sin(t*3.1 + r.fase*2 - p)*.025)*VIDA.apendice,
+            az = (Math.sin(t*1.25 + r.fase*1.3 - p*.5)*(.06 + p*.025) + Math.sin(t*2.6 + r.fase - p*.8)*.02)*ld*VIDA.apendice;
+        ax += (inst.velSuave || 0)*(.12 + p*.05);                    // correndo, joga para trás
         if (vooAtivo && r.asaCadeia) { az = ld*(p ? Math.sin(asaFase - .5 - p*.45)*.16 : .3 + Math.sin(asaFase - .2)*(.5 - inst.velSuave*.1)); ax = -.06; }
         else if (vooAtivo && r.noBraco && inst.asasBracos) az += ld*Math.sin(asaFase - .9 - p*.4)*.16;
         if (e.pose && e.pose.asas && r.asaCadeia) az = ld*(p ? .1 : .9);
         if (e.ataque && (j === 'area' || j === 'chuva')) ax -= atkCurva*.25*solto;
-        r.vx += ((ax - r.x)*70 - r.vx*8.5 - (dV*.09 + dI*.5 + dY*.35)*solto)*dtm;
-        r.vz += ((az - r.z)*70 - r.vz*8.5 + dG*.4*ld*solto)*dtm;
+        r.vx += ((ax - r.x)*55 - r.vx*6.5 - (dV*.13 + dI*.6 + dY*.45)*solto*VIDA.inercia)*dtm;
+        r.vz += ((az - r.z)*55 - r.vz*6.5 + dG*.5*ld*solto*VIDA.inercia)*dtm;
         r.x = THREE.MathUtils.clamp(r.x + r.vx*dtm, -.9, .9); r.z = THREE.MathUtils.clamp(r.z + r.vz*dtm, -.9, .9);
         poseOsso(r, r.x, 0, r.z); continue;
       }
@@ -560,15 +572,26 @@ function animarInstancia(inst, dt, e){
           x = -atkCurva*.4 - .1*vel*Math.max(0, Math.sin(passo + lado(ld))); rapidez = 9; break;
         case 'cauda': {          // a onda passa do começo para a ponta (cada pedaço atrasado)
           const i = r.idx || 0;
-          x = Math.sin(t*2 - i*.5)*.05 - vel*.08;
-          y = Math.sin(t*(1.8 + vel*4) - i*.7)*(.12 + vel*.1) + (e.inclinar || 0)*1.2;
-          if (inst.enrolar) { x += inst.enrolar.x || 0; y += (inst.enrolar.y || 0) + Math.sin(t*1.1 - i*.45)*.06; }
-          if (j === 'combo' && e.ataque.membro === 'cauda') y += Math.sin(t1*Math.PI)*.8;
-          rapidez = 6 - Math.min(3, i*.6); break; }
+          if (inst.enrolar) {      // serpentes (Rayquaza, Arbok): curva fixa + onda suave, sem mola
+            x = Math.sin(t*2 - i*.5)*.05 - vel*.08 + (inst.enrolar.x || 0);
+            y = Math.sin(t*(1.8 + vel*4) - i*.7)*(.12 + vel*.1) + (e.inclinar || 0)*1.2 + (inst.enrolar.y || 0) + Math.sin(t*1.1 - i*.45)*.06;
+            rapidez = 6 - Math.min(3, i*.6); break; }
+          // V18: abana de verdade (a ponta mais que a base), levanta ao pular e "chicoteia" com mola nas curvas e arrancadas
+          const amp = (.16 + i*.035 + vel*.12)*VIDA.cauda, rit = 2.3 + vel*3.5 + (e.ataque ? 2 : 0);
+          let tx = Math.sin(t*1.5 - i*.6)*.07*VIDA.cauda - vel*.12 + (e.noAr ? -.22 : 0) + (e.dano || 0)*.25;
+          let ty = Math.sin(t*rit - i*.8)*amp + Math.sin(t*.7 - i*.3)*.06*VIDA.cauda + (e.inclinar || 0)*1.2;
+          if (j === 'combo' && e.ataque.membro === 'cauda') ty += Math.sin(t1*Math.PI)*.9;
+          if (j === 'area' || j === 'chuva') tx -= atkCurva*.35;
+          const solto = 1 + i*.35, kM = Math.max(22, 60 - i*7);
+          r.wx = (r.wx || 0) + ((tx - (r.x || 0))*kM - (r.wx || 0)*6 + (dV*.1 + dY*.35)*solto*VIDA.inercia)*dtm;
+          r.wy = (r.wy || 0) + ((ty - (r.y || 0))*kM - (r.wy || 0)*6 - dG*.35*solto*VIDA.inercia)*dtm;
+          r.x = THREE.MathUtils.clamp((r.x || 0) + r.wx*dtm, -1.2, 1.2); r.y = THREE.MathUtils.clamp((r.y || 0) + r.wy*dtm, -1.2, 1.2);
+          poseOsso(r, r.x, r.y, 0); continue; }
         case 'cabeca':
           // a cabeça compensa o balanço do corpo (fica mais "olhando para frente")
           x = Math.sin(t*1.7)*.04 - Math.sin(passo*2)*.04*vel - atkCurva*(j === 'chuva' ? .6 : .15) + (e.dano || 0)*.3 - vel*.08;
-          y = Math.sin(t*.5)*.15*(1 - Math.min(1, vel)) + Math.sin(t*.23)*.1*(1 - Math.min(1, vel));
+          y = (Math.sin(t*.5)*.2 + Math.sin(t*.23)*.13)*(1 - Math.min(1, vel))*VIDA.cabeca;
+          z = Math.sin(t*.41 + 1)*.05*(1 - Math.min(1, vel))*VIDA.cabeca;       // inclina a cabeça de leve, curioso
           rapidez = 8; break;
         case 'pescoco':
           x = Math.sin(t*1.7 + .5)*.03; rapidez = 8; break;
@@ -583,9 +606,14 @@ function animarInstancia(inst, dt, e){
           rapidez = vooAtivo ? 12 : 20; break; }
         case 'asa2':
           z = (vooAtivo ? .25 + Math.sin(asaFase - .65)*.45 : e.noAr ? Math.sin(t*12 - .7)*.4 : Math.sin(t*2.5 - .6)*.07)*ld*inst.ampAsa; rapidez = vooAtivo ? 10 : 20; break;
-        case 'orelha': {
-          const mexe = Math.sin(t*.37 + ld) > .7 ? 1 : 0;            // de vez em quando a orelha "mexe"
-          x = mexe*Math.max(0, Math.sin(t*9))*.18 - vel*.15; rapidez = 7; break; }
+        case 'orelha': {         // V18: balança de leve, "mexe" de vez em quando e sacode com mola ao pular/correr
+          const mexe = Math.sin(t*.37 + ld) > .7 ? 1 : 0;
+          const tx = (mexe*Math.max(0, Math.sin(t*9))*.22 + Math.sin(t*1.3 + ld)*.05)*VIDA.orelha - vel*.2 + (e.dano || 0)*.3;
+          const tz = Math.sin(t*.9 + ld*2)*.05*ld*VIDA.orelha;
+          r.wx = (r.wx || 0) + ((tx - (r.x || 0))*65 - (r.wx || 0)*7 - (dV*.12 + dY*.5)*VIDA.inercia)*dtm;
+          r.wz = (r.wz || 0) + ((tz - (r.z || 0))*65 - (r.wz || 0)*7 + dG*.3*ld*VIDA.inercia)*dtm;
+          r.x = THREE.MathUtils.clamp((r.x || 0) + r.wx*dtm, -.9, .9); r.z = THREE.MathUtils.clamp((r.z || 0) + r.wz*dtm, -.9, .9);
+          poseOsso(r, r.x, 0, r.z); continue; }
       }
       const k = 1 - Math.exp(-dt*rapidez);
       r.x = (r.x || 0) + (x - (r.x || 0))*k; r.y = (r.y || 0) + (y - (r.y || 0))*k; r.z = (r.z || 0) + (z - (r.z || 0))*k;
@@ -602,6 +630,8 @@ function animarInstancia(inst, dt, e){
     }
     inst._piscando = k > 0;
   }
+  if (inst.spr) atualizarSprite(inst, dt, e);
+  if (inst.fogo) atualizarFogo(inst, dt);
 }
 const _preto = new THREE.Color(0,0,0);
 // Uma única textura radial de 64px compartilhada por todas as sombras.
@@ -617,4 +647,7 @@ function liberarInstancia(inst){
   inst.raiz.parent && inst.raiz.parent.remove(inst.raiz);
   for (const m of inst.materiais) m.dispose();
   if (inst.sombraVoo) { inst.sombraVoo.material.dispose(); inst.sombraVoo.geometry.dispose(); }
+  if (inst.spr) { inst.spr.mat.map.dispose(); inst.spr.mat.dispose(); }
+  if (inst.sombraSpr) inst.sombraSpr.material.dispose();
+  liberarFogo(inst);
 }

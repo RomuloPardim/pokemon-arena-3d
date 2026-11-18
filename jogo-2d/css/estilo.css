@@ -225,3 +225,16 @@ body.touch #megaBtn .key{display:none}
 @keyframes koTexto{0%{transform:translate(-50%,-50%) scale(3);opacity:0}12%{transform:translate(-50%,-50%) scale(1);opacity:1}20%{transform:translate(-50%,-50%) scale(1.12)}80%{opacity:1}100%{transform:translate(-50%,-50%) scale(1);opacity:0}}
 #cv.ko{filter:grayscale(.75) brightness(.8) contrast(1.1);transition:filter .3s}
 #cv{transition:filter .6s}
+
+/* V16: tela de controles */
+.b-blu{background:linear-gradient(180deg,#4d8dff,#2f5fd0)}
+.ctrl2d h2{margin:0 0 6px;font-family:"Press Start 2P",monospace;font-size:16px;color:#ffd23f}
+.ctrl2d table{width:100%;border-collapse:collapse;margin:8px 0}
+.ctrl2d th{font-size:11px;color:var(--mut);text-align:left;padding:4px}
+.ctrl2d td{padding:3px 4px;border-top:1px solid var(--line);font-size:14px}
+.ctrl2d .tecla{min-width:96px;padding:7px 10px;border-radius:8px;background:var(--panel2);border:1px solid var(--line);font-weight:800;font-size:13px}
+.ctrl2d .tecla:hover{border-color:#ffd23f}
+.ctrl2d .tecla.esperando{background:#ffd23f;color:#15182a;animation:abPisca 1s steps(2) infinite}
+.ctrl2d .mouse2d{display:flex;gap:14px;flex-wrap:wrap;margin:6px 0}
+.ctrl2d select{margin-left:6px;padding:6px;border-radius:8px;background:var(--panel2);color:inherit;border:1px solid var(--line)}
+.ctrl2d .row{justify-content:flex-end;gap:10px}

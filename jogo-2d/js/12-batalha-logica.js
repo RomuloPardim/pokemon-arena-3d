@@ -2,7 +2,7 @@
 const keys = {};
 const held = [false,false,false,false];
 let pularPedido = false, ultPedido = false;
-let mouse = {x:0,y:0,down:false};
+let mouse = {x:0,y:0,down:false,down2:false};
 const joy = {id:null, ox:0, oy:0, dx:0, dy:0};
 const tem = (lista, k) => lista.includes(k);
 addEventListener('keydown', e => {
@@ -16,10 +16,13 @@ addEventListener('keydown', e => {
   if ([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(k)) e.preventDefault();
 });
 addEventListener('keyup', e => { const k = e.key.toLowerCase(); keys[k] = false; CONTROLES.golpes.forEach((lista,i) => { if (tem(lista,k)) held[i] = false; }); });
-addEventListener('blur', () => { for (const k in keys) keys[k] = false; held.fill(false); mouse.down = false; });
+addEventListener('blur', () => { for (const k in keys) keys[k] = false; held.fill(false); mouse.down = mouse.down2 = false; });
 cv.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
-cv.addEventListener('mousedown', e => { if (e.button === 0) mouse.down = true; if (e.button === 2) pularPedido = true; });
-addEventListener('mouseup', () => mouse.down = false);
+cv.addEventListener('mousedown', e => { if (e.button === 0) mouse.down = true;
+  if (e.button === 2) { const a = CONTROLES.cliqueDireito;              // V16: botão direito configurável
+    if (a === 'pular') pularPedido = true; else if (a === 'ultimate') ultPedido = performance.now();
+    else if (a === 'mega') megaPedido = true; else if (a.startsWith('golpe')) mouse.down2 = true; } });
+addEventListener('mouseup', e => { if (e.button === 2) mouse.down2 = false; else mouse.down = false; });
 cv.addEventListener('contextmenu', e => e.preventDefault());
 const joyEl = $('#joy'), joyB = $('#joyB'), joyK = $('#joyK');
 joyEl.addEventListener('pointerdown', e => {
@@ -60,6 +63,7 @@ function lerEntradaJogador(me, foe){
   }
   const golpes = held.slice();
   if (mouse.down && !isTouch && CONTROLES.golpeDoMouse >= 0) golpes[CONTROLES.golpeDoMouse] = true;
+  if (mouse.down2 && !isTouch && CONTROLES.cliqueDireito.startsWith('golpe')) golpes[+CONTROLES.cliqueDireito.slice(5)] = true;
   const pular = pularPedido; pularPedido = false;
   return {mx, my, aim, tx, ty, golpes, pular};
 }
@@ -71,15 +75,16 @@ function buildHud(){
   $('#hudR').innerHTML = G.teams[1].f.map((f,i) => pt(f,i,1)).join('');
   $('#hudL').querySelectorAll('.pt').forEach(el => el.onclick = () => playerSwitch(+el.dataset.i));
   $('#timer').onclick = togglePause;
-  $('#jumpBtn .key').textContent = CONTROLES.pular[0] === ' ' ? 'ESPAÇO' : CONTROLES.pular[0].toUpperCase();
-  $('#ultBtn .key').textContent = CONTROLES.ultimate[0].toUpperCase();
+  $('#jumpBtn .key').textContent = nomeTecla(CONTROLES.pular[0]);
+  $('#ultBtn .key').textContent = nomeTecla(CONTROLES.ultimate[0]);
+  $('#megaBtn .key').textContent = nomeTecla(CONTROLES.mega[0]);
   buildMoves();
 }
 let movesFor = null;
 function buildMoves(){
   const f = active(0); movesFor = f;
   if (!f) { $('#moves').innerHTML = ''; return; }
-  const keysLbl = CONTROLES.golpes.map((l,i) => l[0].toUpperCase() + (i === CONTROLES.golpeDoMouse ? ' / 🖱' : ''));
+  const keysLbl = CONTROLES.golpes.map((l,i) => nomeTecla(l[0]) + (i === CONTROLES.golpeDoMouse ? ' / 🖱' : ''));
   $('#moves').innerHTML = f.moves.map((m,i) => `<button class="mb" data-i="${i}">
       <span class="ty" style="background:${TYPES[m.t][1]}"></span>
       <span class="n">${m.n}</span><span class="k">${TYPES[m.t][0]} · ${KIND_PT[m.k]}</span>

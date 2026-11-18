@@ -24,3 +24,6 @@ Projeto pessoal de estudo, sem fins comerciais. Pokémon e todos os personagens,
 
 ## Fontes
 Press Start 2P e Rubik — Google Fonts (SIL Open Font License).
+
+- **gifuct-js** 2.1.2 (MIT) — decodifica os GIFs animados dos sprites da luta 3D (`js/lib/gifuct.min.js`).
+- **Sprites animados** (pasta `showdown` do repositório PokeAPI/sprites) — usados nos menus e na luta 3D.

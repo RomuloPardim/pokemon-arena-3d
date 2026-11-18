@@ -42,7 +42,7 @@ function atualizarPaineis(forcar){
     const L = lutador(t), el = $('#pj' + t); if (!L || !el) continue;
     if (!forcar && el._id === L.p.id && el._ativo === JOGO.ativo[t] && el._mega === !!L.mega) continue;
     el._id = L.p.id; el._ativo = JOGO.ativo[t]; el._mega = !!L.mega;
-    el.querySelector('.ret img').src = ICONE(L.p.id);
+    { const im = el.querySelector('.ret img'); im.className = 'retr'; im.dataset.id = L.p.id; delete im.dataset.caiu; im.onerror = () => retratoErro(im); const rid = L.mega && S.retratos !== 'home' && typeof idSpriteMega === 'function' ? (idSpriteMega(L.p.id, megaDe(L)) || L.p.id) : L.p.id; im.src = RETRATO(rid); }   // V17: retrato da Mega
     el.querySelector('.nome b').textContent = L.mega ? megaDe(L).nome : L.p.nome;
     el.querySelector('.tipos').innerHTML = L.p.tipos.map(tp => `<span style="background:${TYPES[tp][1]}">${TYPES[tp][0]}</span>`).join('') +
       `<span class="estilo">${ESTILOS_LUTA[L.p.estilo].nome}</span>`;
@@ -51,7 +51,7 @@ function atualizarPaineis(forcar){
     el.querySelector('.equipe').innerHTML = JOGO.times[t].map((m, i) => {
       if (i === JOGO.ativo[t]) return '';
       const k = reserva.indexOf(m);
-      return `<div class="mini ${m.vivo ? '' : 'caido'}" data-i="${i}"><img src="${ICONE(m.p.id)}" alt=""><i class="hp"></i><i class="cd"></i>${k >= 0 && JOGO.controle[t] === 'jogador' ? `<kbd>${rotulo(JOGO.jogadorDoTime[t], 'assist' + k)}</kbd>` : ''}</div>`;
+      return `<div class="mini ${m.vivo ? '' : 'caido'}" data-i="${i}"><img class="retr" src="${RETRATO(m.p.id)}" data-id="${m.p.id}" alt="" onerror="retratoErro(this)"><i class="hp"></i><i class="cd"></i>${k >= 0 && JOGO.controle[t] === 'jogador' ? `<kbd>${rotulo(JOGO.jogadorDoTime[t], 'assist' + k)}</kbd>` : ''}</div>`;
     }).join('');
     // golpes
     const n = JOGO.jogadorDoTime[t], mostrarTeclas = JOGO.controle[t] === 'jogador';

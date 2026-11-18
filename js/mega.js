@@ -39,7 +39,8 @@ function fichaDaMega(L){
   return Object.assign({}, p, {
     altura: (M.altura || p.altura)*REGRAS_MEGA.escala,
     escalaModelo: M.escalaModelo ?? p.escalaModelo, enrolar: M.enrolar ?? p.enrolar,
-    asasBracos: M.asasBracos ?? p.asasBracos, voa: M.voa ?? p.voa, ocultarMalhas: M.ocultarMalhas, ampAsa: M.ampAsa ?? p.ampAsa, semAutoRig: M.semAutoRig ?? p.semAutoRig,
+    asasBracos: M.asasBracos ?? p.asasBracos, voa: M.voa ?? p.voa, ocultarMalhas: M.ocultarMalhas, fogoCauda: M.fogoCauda ?? p.fogoCauda, escalaOssos: M.escalaOssos, rotModelo: M.rotModelo, ampAsa: M.ampAsa ?? p.ampAsa, semAutoRig: M.semAutoRig ?? p.semAutoRig,
+    spriteId: idSpriteMega(p.id, M) || p.id,            // V17: sprite animado da forma Mega
   });
 }
 
@@ -100,6 +101,14 @@ async function visualDaMega(L, M){
     if (nova && L.vivo) { trocarModelo(L, nova); return; }
   }
   L.inst.ajuste.scale.multiplyScalar(REGRAS_MEGA.escala);
+  if (L.inst.spr) {                                   // V17: modo sprite sem modelo próprio
+    const sid = idSpriteMega(L.p.id, M);
+    if (!(sid && await trocarSprite(L.inst, sid, REGRAS_MEGA.escala))) {
+      L.inst.spr.grupo.scale.multiplyScalar(REGRAS_MEGA.escala);
+      if (M.tinta) L.inst.spr.cor.lerp(new THREE.Color(M.tinta.cor), (M.tinta.forca ?? .7)*.5);
+    }
+    return;
+  }
   if (M.tinta) for (const m of L.inst.materiais) {
     if (m.color) m.color.lerp(new THREE.Color(M.tinta.cor), M.tinta.forca ?? .7);
     if (m.emissive) { m.emissive.setHex(M.tinta.brilho); m.emissiveIntensity = M.tinta.intensidade ?? .35; }

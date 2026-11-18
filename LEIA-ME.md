@@ -1,3 +1,59 @@
+# Pokémon Arena V19 — Ajustes finos e fogo de verdade na cauda do Charizard
+
+- **Pikachu** estava deitado: o modelo agora fica em pé (`rotModelo` na ficha).
+- **Flareon e Onix** andavam de costas: o modelo foi virado para a frente (`rotModelo:[0, Math.PI, 0]`).
+- **Rayquaza** menor (escala .5 → .38) e um pouco enrolado. **Mega Rayquaza** bem menor (.35 → .23): não sai mais da câmera.
+- **Mega Charizard Y:** cauda mais curta (`escalaOssos`) e solta (usa a cauda com mola da V18); a chama amarela gigante saiu.
+- **Fogo de verdade** na ponta da cauda do Charizard e da Mega Charizard Y (`js/fogo.js`): shader com ruído subindo,
+  núcleo amarelo, borda laranja-vermelha, tremendo e com brilho em volta. A chama cinza do modelo foi encolhida.
+- Novas opções de ficha: `rotModelo` (gira o modelo inteiro), `escalaOssos` (encolhe uma parte a partir de um osso)
+  e `fogoCauda` (fogo na ponta da cauda).
+- Removido `jogo-2d/ferramentas/montar.py` (sobrou da V15; o 2D não tem mais arquivo único).
+
+# Pokémon Arena V18 — Luta volta aos modelos 3D, com cauda, orelhas e enfeites mais vivos
+
+- **A luta usa os modelos 3D de novo** (padrão). Os sprites animados continuam nos menus e no placar.
+  Quem quiser os sprites na luta: Configurações → Visual dos Pokémon na luta → Sprites animados.
+- **Cauda com mola:** abana mais (a ponta mais que a base), levanta no pulo e "chicoteia" quando o Pokémon vira ou arranca.
+- **Orelhas com mola:** balançam de leve, mexem de vez em quando e sacodem ao pular e correr.
+- **Antenas, penas, cabelo, fitas, barbatanas:** balanço maior, com dois ritmos, e jogam para trás ao correr.
+- **Cabeça** olha mais em volta e inclina de leve quando o Pokémon está parado.
+- Ajuste fino na tabela `VIDA` em `js/modelos.js` (1 = padrão; aumente para mais movimento).
+- Modelos com animação própria (ex.: Dragonite) usam a animação deles e não mudam.
+
+# Pokémon Arena V17.1 — Sprites em pé no mapa e com movimento de ataque
+
+- O sprite virou uma **placa em pé no chão** (gira só para os lados, não inclina com a câmera), recebe a **luz e a neblina** do mapa
+  e faz **sombra com o formato do Pokémon**.
+- **Movimento nos golpes** (`poseDoGolpe` em `js/sprites-luta.js`): investida avança e estica, projétil recua e arremessa,
+  raio inclina para trás e treme, área pula e bate no chão, chuva/meteoro empina; ao andar ele balança e ao apanhar é empurrado.
+- Para voltar aos modelos: Configurações → Visual dos Pokémon na luta → Modelos 3D.
+
+# Pokémon Arena V17 — Sprites animados na luta 3D
+
+## O que mudou na V17
+- **Os Pokémon da luta 3D agora são os sprites animados** (os mesmos da seleção), de frente ou de costas conforme
+  o lado para onde olham, virando para a esquerda ou direita. Eles pulam, avançam, encolhem e piscam ao levar dano como antes.
+- **Mega Evolução com sprite próprio** em 29 formas (incluindo Mega Charizard X e Y, Mega Mewtwo X e Y, Kyogre e Groudon Primitivos).
+  As que não têm sprite (Mega Raichu X, Feraligatr, Darkrai e Greninja) ficam maiores e com cor. O retrato do placar também muda.
+- **Configurações → Visual dos Pokémon na luta:** "Modelos 3D" volta ao visual antigo (vale a partir da próxima luta).
+- O modelo 3D continua carregado e invisível: ele mede o tamanho, a colisão e de onde saem os golpes.
+- Código em `js/sprites-luta.js`. O GIF é aberto pela biblioteca gifuct-js (licença MIT, `js/lib/gifuct.min.js`).
+
+---
+
+# Pokémon Arena V16 — Retratos animados no 3D e troca de teclas no 2D
+
+## O que mudou na V16
+- **3D: retratos animados** na seleção, no placar, nos reservas e no torneio — os mesmos sprites da seleção do jogo 2D
+  (PokeAPI, pasta `showdown`). Configurações → **Retratos dos Pokémon** volta para o desenho HOME. Se um animado falhar, entra o HOME.
+  Os modelos da luta continuam 3D.
+- **2D: tela ⌨ CONTROLES** no menu: troque qualquer tecla (duas por ação), escolha o que o clique esquerdo e o direito fazem
+  (golpe 1–4, pulo, Ultimate, Mega ou nada) e restaure o padrão. Fica salvo no navegador. Os textos de ajuda e as teclas do HUD
+  mostram as teclas escolhidas. Código em `jogo-2d/js/08-controles.js`.
+
+---
+
 # Pokémon Arena V15 — 100 Pokémon nos dois jogos, Mega X/Y e cinemáticas no 2D
 
 ## O que mudou na V15

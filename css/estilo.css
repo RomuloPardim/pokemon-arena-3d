@@ -382,3 +382,7 @@ body.ko #palco canvas { filter: saturate(.35) contrast(1.15); transition: filter
 .opMega span { font-weight: 800; font-size: clamp(12px, 1.5vw, 16px); text-align: center; padding: 0 8px; }
 .opMega.sel, .opMega:hover { transform: scale(1.1); opacity: 1; box-shadow: 0 0 40px var(--c), 0 0 0 4px #fff; }
 #escolhaMega .dica { color: #cfe0ff; font-size: 13px; margin: 0; }
+
+/* V16: retratos animados — o GIF é pequeno; mantém proporção e não borra */
+img.retr { object-fit: contain; image-rendering: auto; }
+.carta img.retr { transform: scale(1.05); }

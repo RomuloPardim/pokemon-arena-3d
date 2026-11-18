@@ -77,6 +77,8 @@
   <div class="caixaMenu">
     <div class="campo"><label>QUALIDADE GRÁFICA · desktop e celular</label><div class="seg" id="segQual"><button data-v="auto">Automática (recomendada)</button><button data-v="baixa">Baixa</button><button data-v="media">Média</button><button data-v="alta">Alta (brilho)</button></div></div>
     <div class="campo"><label>MOSTRAR FPS (PARA TESTAR)</label><div class="seg" id="segFps"><button data-v="true">Mostrar</button><button data-v="false">Ocultar</button></div></div>
+    <div class="campo"><label>VISUAL DOS POKÉMON NA LUTA (vale na próxima luta)</label><div class="seg" id="segVisual"><button data-v="sprites">Sprites animados</button><button data-v="modelos">Modelos 3D</button></div></div>
+    <div class="campo"><label>RETRATOS DOS POKÉMON (menus e placar)</label><div class="seg" id="segRetratos"><button data-v="animado">Animados</button><button data-v="home">Desenho HOME</button></div></div>
     <div class="campo"><label>ANIMAÇÃO DAS ULTIMATES</label><div class="seg" id="segUlt"><button data-v="completa">Completa</button><button data-v="rapida">Acelerada</button><button data-v="curta">Curta quando repetir</button></div></div>
     <div class="campo"><label>TEMPO POR RODADA</label><div class="seg" id="segTempo"><button data-v="0">Sem limite</button><button data-v="99">99 s</button><button data-v="180">180 s</button></div></div>
     <div class="campo"><label>DIFICULDADE DA CPU</label><div class="seg" id="segDif"><button data-v="facil">Fácil</button><button data-v="normal">Normal</button><button data-v="dificil">Difícil</button></div></div>
@@ -146,6 +148,9 @@
 <script src="js/lib/three-r149-bundle.js"></script>
 <script src="js/dados.js"></script>
 <script src="js/modelos.js"></script>
+<script src="js/fogo.js"></script>
+<script src="js/lib/gifuct.min.js"></script>
+<script src="js/sprites-luta.js"></script>
 <!-- Os 35 modelos são carregados sob demanda, somente quando necessários -->
 <script src="js/catalogo-modelos.js"></script>
 <!-- jogo -->

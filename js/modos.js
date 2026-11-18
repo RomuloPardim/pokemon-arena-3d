@@ -137,7 +137,7 @@ function mostrarChave(){
   const el = $('#chave');
   el.innerHTML = TORNEIO.rodadas.map((R, r) => `<div class="fase"><h4>${['Quartas','Semifinal','Final'][r + (TORNEIO.qtd === 4 ? 1 : 0)] || 'Rodada'}</h4>` +
     Array.from({ length: R.length/2 }, (_, i) => { const a = R[i*2], b = R[i*2 + 1];
-      const lado = x => `<div class="part ${x.venceu ? 'venceu' : ''} ${x.perdeu ? 'perdeu' : ''} ${x.humano >= 0 ? 'humano' : ''}"><span>${x.nome}</span>${x.time.map(id => `<img src="${ICONE(id)}" alt="">`).join('')}</div>`;
+      const lado = x => `<div class="part ${x.venceu ? 'venceu' : ''} ${x.perdeu ? 'perdeu' : ''} ${x.humano >= 0 ? 'humano' : ''}"><span>${x.nome}</span>${x.time.map(id => `<img class="retr" src="${RETRATO(id)}" data-id="${id}" alt="" onerror="retratoErro(this)">`).join('')}</div>`;
       return `<div class="jogo">${lado(a)}${lado(b)}</div>`; }).join('') + '</div>').join('') +
     (TORNEIO.campeao ? `<div class="fase"><h4>Campeão</h4><div class="campeao">🏆 ${TORNEIO.campeao.nome}</div></div>` : '');
   const prox = partidaAtualTorneio();
