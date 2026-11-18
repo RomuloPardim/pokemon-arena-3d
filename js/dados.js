@@ -78,6 +78,7 @@ const golpe = (nome, tipo, jeito, poder, recarga, extras) =>
    escalaModelo: corrige o tamanho visual de um modelo sem mudar a altura do combate
    enrolar : { y, x } = curva fixa por pedaço da cauda (serpentes como o Rayquaza)
    lendario: true = mostra a marca LENDÁRIO na seleção
+   ampAsa  : 0..1 = quanto as asas se mexem (1 = normal; .15 = quase rígidas)
    ocultarMalhas: /nome/ = esconde peças do modelo que não devem aparecer (e não contam no tamanho)
    ult     : nome e jeito da Ultimate (meteoro, tempestade, nova, rajada); visual opcional      */
 const P = (id, nome, tipos, hp, atk, def, vel, altura, golpes, ult, extra) => Object.assign({ id, nome, tipos: tipos.split(' '), hp, atk, def, vel, altura, golpes, ult }, extra || {});
@@ -489,33 +490,42 @@ for (const p of POKEMON) Object.assign(p, { estilo: 'equilibrado', roteiro: 'nov
 /* ----- Mega Evoluções -----
    Quem está nesta lista pode Mega Evoluir (1 vez por time em cada rodada; regras em js/mega.js).
    atk / def / vel = multiplicadores dos atributos depois da Mega.
-   cor = cor da aura.   modelo = id do modelo 3D da Mega (por enquanto null: usa o modelo normal maior e com aura) */
+   cor = cor da aura.   modelo = arquivo do modelo 3D da Mega em js/catalogo-modelos.js (null = usa o modelo normal maior e com aura)
+   tinta = recolore o modelo normal quando não há modelo próprio (cor do corpo e brilho)   primal = Reversão Primitiva (Kyogre/Groudon)
+   altura / escalaModelo / enrolar / asasBracos / voa = ajustes do modelo da Mega (se faltar, usa o do Pokémon) */
 const MEGAS = {
-  3:   { nome: 'Mega Venusaur',   atk: 1.15, def: 1.30, vel: 1.00, cor: 0x7ac74c, modelo: null },
-  6:   { nome: 'Mega Charizard X',atk: 1.30, def: 1.15, vel: 1.05, cor: 0x3a8bff, modelo: null },
-  9:   { nome: 'Mega Blastoise',  atk: 1.20, def: 1.25, vel: 1.00, cor: 0x6390f0, modelo: null },
-  18:  { nome: 'Mega Pidgeot',    atk: 1.20, def: 1.10, vel: 1.20, cor: 0xa98ff3, modelo: null },
-  65:  { nome: 'Mega Alakazam',   atk: 1.25, def: 1.05, vel: 1.15, cor: 0xf95587, modelo: null },
-  94:  { nome: 'Mega Gengar',     atk: 1.25, def: 1.10, vel: 1.10, cor: 0x7a3fd0, modelo: null },
-  130: { nome: 'Mega Gyarados',   atk: 1.25, def: 1.20, vel: 1.00, cor: 0x2a2a6a, modelo: null },
-  142: { nome: 'Mega Aerodactyl', atk: 1.20, def: 1.10, vel: 1.15, cor: 0xb6a136, modelo: null },
+  3:   { nome: 'Mega Venusaur',   atk: 1.15, def: 1.30, vel: 1.00, cor: 0x7ac74c, modelo: 'mega-3' },
+  6:   { nome: 'Mega Charizard X',atk: 1.30, def: 1.15, vel: 1.05, cor: 0x3a8bff, modelo: null, tinta: { cor: 0x1e2128, forca: .88, brilho: 0x0f2f8a, intensidade: .3 } },
+  9:   { nome: 'Mega Blastoise',  atk: 1.20, def: 1.25, vel: 1.00, cor: 0x6390f0, modelo: 'mega-9' },
+  18:  { nome: 'Mega Pidgeot',    atk: 1.20, def: 1.10, vel: 1.20, cor: 0xa98ff3, modelo: 'mega-18' },
+  65:  { nome: 'Mega Alakazam',   atk: 1.25, def: 1.05, vel: 1.15, cor: 0xf95587, modelo: 'mega-65' },
+  94:  { nome: 'Mega Gengar',     atk: 1.25, def: 1.10, vel: 1.10, cor: 0x7a3fd0, modelo: 'mega-94' },
+  130: { nome: 'Mega Gyarados',   atk: 1.25, def: 1.20, vel: 1.00, cor: 0x2a2a6a, modelo: 'mega-130' },
+  142: { nome: 'Mega Aerodactyl', atk: 1.20, def: 1.10, vel: 1.15, cor: 0xb6a136, modelo: 'mega-142' },
   181: { nome: 'Mega Ampharos',   atk: 1.25, def: 1.15, vel: 1.00, cor: 0xffd84a, modelo: null },
-  212: { nome: 'Mega Scizor',     atk: 1.20, def: 1.25, vel: 1.00, cor: 0xb7b7ce, modelo: null },
-  214: { nome: 'Mega Heracross',  atk: 1.30, def: 1.15, vel: 1.00, cor: 0x4a6ad0, modelo: null },
-  229: { nome: 'Mega Houndoom',   atk: 1.25, def: 1.10, vel: 1.10, cor: 0xee8130, modelo: null },
-  248: { nome: 'Mega Tyranitar',  atk: 1.20, def: 1.25, vel: 1.00, cor: 0x705746, modelo: null },
-  254: { nome: 'Mega Sceptile',   atk: 1.20, def: 1.10, vel: 1.15, cor: 0x7ac74c, modelo: null },
-  257: { nome: 'Mega Blaziken',   atk: 1.25, def: 1.10, vel: 1.15, cor: 0xee8130, modelo: null },
-  260: { nome: 'Mega Swampert',   atk: 1.25, def: 1.20, vel: 1.00, cor: 0x6390f0, modelo: null },
-  282: { nome: 'Mega Gardevoir',  atk: 1.25, def: 1.15, vel: 1.05, cor: 0xd685ad, modelo: null },
-  306: { nome: 'Mega Aggron',     atk: 1.10, def: 1.35, vel: 1.00, cor: 0xb7b7ce, modelo: null },
-  359: { nome: 'Mega Absol',      atk: 1.25, def: 1.05, vel: 1.15, cor: 0xf0f0ff, modelo: null },
-  376: { nome: 'Mega Metagross',  atk: 1.20, def: 1.20, vel: 1.10, cor: 0xb7b7ce, modelo: null },
-  380: { nome: 'Mega Latias',     atk: 1.20, def: 1.20, vel: 1.05, cor: 0xa66bff, modelo: null },
-  381: { nome: 'Mega Latios',     atk: 1.25, def: 1.15, vel: 1.05, cor: 0xa66bff, modelo: null },
-  384: { nome: 'Mega Rayquaza',   atk: 1.25, def: 1.10, vel: 1.10, cor: 0x3ddc84, modelo: null },
-  445: { nome: 'Mega Garchomp',   atk: 1.25, def: 1.15, vel: 1.00, cor: 0x6f35fc, modelo: null },
-  448: { nome: 'Mega Lucario',    atk: 1.25, def: 1.05, vel: 1.15, cor: 0x3a8bff, modelo: null },
-  475: { nome: 'Mega Gallade',    atk: 1.25, def: 1.10, vel: 1.10, cor: 0x7ac74c, modelo: null },
-  150: { nome: 'Mega Mewtwo Y',   atk: 1.25, def: 1.05, vel: 1.10, cor: 0xf95587, modelo: null },
+  212: { nome: 'Mega Scizor',     atk: 1.20, def: 1.25, vel: 1.00, cor: 0xb7b7ce, modelo: 'mega-212' },
+  214: { nome: 'Mega Heracross',  atk: 1.30, def: 1.15, vel: 1.00, cor: 0x4a6ad0, modelo: 'mega-214' },
+  229: { nome: 'Mega Houndoom',   atk: 1.25, def: 1.10, vel: 1.10, cor: 0xee8130, modelo: 'mega-229' },
+  248: { nome: 'Mega Tyranitar',  atk: 1.20, def: 1.25, vel: 1.00, cor: 0x705746, modelo: 'mega-248' },
+  254: { nome: 'Mega Sceptile',   atk: 1.20, def: 1.10, vel: 1.15, cor: 0x7ac74c, modelo: 'mega-254' },
+  257: { nome: 'Mega Blaziken',   atk: 1.25, def: 1.10, vel: 1.15, cor: 0xee8130, modelo: 'mega-257' },
+  260: { nome: 'Mega Swampert',   atk: 1.25, def: 1.20, vel: 1.00, cor: 0x6390f0, modelo: 'mega-260' },
+  282: { nome: 'Mega Gardevoir',  atk: 1.25, def: 1.15, vel: 1.05, cor: 0xd685ad, modelo: 'mega-282' },
+  306: { nome: 'Mega Aggron',     atk: 1.10, def: 1.35, vel: 1.00, cor: 0xb7b7ce, modelo: 'mega-306' },
+  359: { nome: 'Mega Absol',      atk: 1.25, def: 1.05, vel: 1.15, cor: 0xf0f0ff, modelo: 'mega-359' },
+  376: { nome: 'Mega Metagross',  atk: 1.20, def: 1.20, vel: 1.10, cor: 0xb7b7ce, modelo: 'mega-376' },
+  380: { nome: 'Mega Latias',     atk: 1.20, def: 1.20, vel: 1.05, cor: 0xa66bff, modelo: 'mega-380', asasBracos: true, ampAsa: .15 },
+  381: { nome: 'Mega Latios',     atk: 1.25, def: 1.15, vel: 1.05, cor: 0xa66bff, modelo: 'mega-381', asasBracos: true, ampAsa: .15 },
+  384: { nome: 'Mega Rayquaza',   atk: 1.25, def: 1.10, vel: 1.10, cor: 0x3ddc84, modelo: 'mega-384', escalaModelo: .35 },
+  445: { nome: 'Mega Garchomp',   atk: 1.25, def: 1.15, vel: 1.00, cor: 0x6f35fc, modelo: 'mega-445' },
+  448: { nome: 'Mega Lucario',    atk: 1.25, def: 1.05, vel: 1.15, cor: 0x3a8bff, modelo: 'mega-448' },
+  475: { nome: 'Mega Gallade',    atk: 1.25, def: 1.10, vel: 1.10, cor: 0x7ac74c, modelo: 'mega-475' },
+  150: { nome: 'Mega Mewtwo Y',   atk: 1.25, def: 1.05, vel: 1.10, cor: 0xf95587, modelo: 'mega-150' },
+  // ----- novas (V12): Megas de Pokémon Legends Z-A e formas Primais -----
+  26:  { nome: 'Mega Raichu X',    atk: 1.25, def: 1.05, vel: 1.15, cor: 0xffd84a, modelo: 'mega-26' },
+  160: { nome: 'Mega Feraligatr',  atk: 1.25, def: 1.15, vel: 1.05, cor: 0x3a8bff, modelo: 'mega-160' },
+  491: { nome: 'Mega Darkrai',     atk: 1.25, def: 1.10, vel: 1.10, cor: 0x7a3fd0, modelo: 'mega-491' },
+  658: { nome: 'Mega Greninja',    atk: 1.25, def: 1.05, vel: 1.15, cor: 0x3a8bff, modelo: 'mega-658' },
+  382: { nome: 'Kyogre Primitivo', atk: 1.20, def: 1.20, vel: 1.05, cor: 0x2a6aff, modelo: 'mega-382', primal: true, escalaModelo: .8 },
+  383: { nome: 'Groudon Primitivo',atk: 1.25, def: 1.20, vel: 1.00, cor: 0xff5a1a, modelo: 'mega-383', primal: true },
 };

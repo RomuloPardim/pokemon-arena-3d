@@ -173,6 +173,7 @@ function usarGolpe(L, i, alvo){
   L.ataque = { t: 0, dur: .55, jeito: g.jeito };
   const e = estilo(g.tipo);
   const origem = centroDe(L).addScaledVector(dir, L.raio*.9);
+  if (L.mega) golpeMega(L, g, origem);      // Mega: aura na cor da Mega a cada golpe (mega.js)
   // golpe com coreografia própria (golpes-especiais.js)?
   if (ASSINATURAS[g.nome] && ASSINATURAS[g.nome](L, g, alvo, dir)) { L.en = Math.min(100, L.en + 2); return true; }
   if (g.jeito !== 'buff' && g.jeito !== 'chuva') cargaGolpe(L, g.tipo, g.jeito === 'raio' ? .25 : .2);
@@ -214,7 +215,7 @@ function usarGolpe(L, i, alvo){
           return;
         }
         const fim = tracarRaio(L, o, dir, 17, g, 1);
-        feixe(g.tipo, o, fim, g.largura || .65, .5); SOM.raio(); tremer(.15);
+        feixe(g.tipo, o, fim, (g.largura || .65)*(L.mega ? 1.4 : 1), .5); SOM.raio(); tremer(.15);
         clarao(e.c1, o.x, o.y, o.z, 5, 9, .4);
       });
       break; }
@@ -383,10 +384,11 @@ function visualProjetil(g, raio){
   return { grupo, partes };
 }
 function criarProjetil(L, g, pos, dir, vel, raio, opcoes = {}){
+  if (L && L.mega && !opcoes.ult) raio *= 1.3;      // Mega: projéteis maiores e com brilho
   const vis = visualProjetil(g, raio);
   vis.grupo.position.copy(pos); cena.add(vis.grupo);
   JOGO.projeteis.push({ dono: L, g, pos: pos.clone(), vel: dir.clone().multiplyScalar(vel), raio, vida: opcoes.vida || 1.1, mesh: vis.grupo, partes: vis.partes,
-    mult: opcoes.mult || 1, atravessa: !!opcoes.atravessa, acertados: new Set(), t: 0, ult: !!opcoes.ult, ondas: !!opcoes.ondas, sombra: !!opcoes.sombra });
+    mult: opcoes.mult || 1, atravessa: !!opcoes.atravessa, acertados: new Set(), t: 0, ult: !!opcoes.ult, ondas: !!opcoes.ondas, sombra: !!opcoes.sombra, mega: !!(L && L.mega) });
 }
 function atualizarProjeteis(dt){
   for (let i = JOGO.projeteis.length - 1; i >= 0; i--) {
@@ -396,6 +398,7 @@ function atualizarProjeteis(dt){
       if (A && A.vivo) { const d = new THREE.Vector3(A.pos.x, A.y + A.altura*.5, A.pos.z).sub(P.pos).normalize().multiplyScalar(P.vel.length()); P.vel.lerp(d, Math.min(1, dt*2.5)); }
       auraProjetil(P, 2);
     }
+    if (P.mega && !P.ult && Math.random() < .5) auraProjetil(P, 1);
     if (P.ondas && Math.random() < .25) flash('anel', estilo(P.g.tipo).c1, P.pos.x, P.pos.y, P.pos.z, 1.6, .25);
     if (P.sombra) for (let k = 0; k < 2; k++) FUMACA.add({ x: P.pos.x + rnd(-.3, .3), y: P.pos.y + rnd(-.3, .3), z: P.pos.z + rnd(-.3, .3), vx: 0, vy: rnd(0, 1), vz: 0, cor: 0x2a1240, tam: .9, vida: .5, cel: 'fumaca0', cresce: 1.2 });
     P.vida -= dt; P.t += dt; P.pos.addScaledVector(P.vel, dt); P.mesh.position.copy(P.pos);
@@ -633,8 +636,8 @@ function trocarPara(t, i){
 function atualizarLutador(L, dt){
   for (let i = 0; i < 4; i++) L.cds[i] = Math.max(0, L.cds[i] - dt);
   L.esqCd = Math.max(0, L.esqCd - dt); L.inv = Math.max(0, L.inv - dt); L.buffT = Math.max(0, L.buffT - dt); L.danoT = Math.max(0, L.danoT - dt);
-  if (L.surgir < 1) { L.surgir = Math.min(1, L.surgir + dt*3.5);
-  atualizarMega(L, dt); L.inst.raiz.scale.setScalar(.01 + L.surgir*.99); }
+  if (L.surgir < 1) { L.surgir = Math.min(1, L.surgir + dt*3.5); L.inst.raiz.scale.setScalar(.01 + L.surgir*.99); }
+  atualizarMega(L, dt);
   atualizarCombate(L, dt);
   if (L.ataque) { L.ataque.t += dt/L.ataque.dur; if (L.ataque.t >= 1) L.ataque = null; }
   if (L.desmaio) L.desmaio = Math.min(1, L.desmaio + dt*1.5);

@@ -14,6 +14,7 @@ Link para jogar: https://romulopardim.github.io/pokemon-arena-3d/
 - **Modelos 3D animados por código**: o esqueleto de cada modelo é reconhecido e animado (andar, correr, voar, atacar), com movimento suavizado.
 - **Pokémon voadores voam de verdade**, e as aves batem as asas.
 - **Combate completo**: combos de 3 a 5 golpes, lançamentos, golpes aéreos, golpe carregado, guarda com barra, contra-ataque, esquiva perfeita, substituição, levantar rápido, quebra de combo.
+- **Mega Evolução e Reversão Primitiva**: 33 formas (31 com modelo 3D próprio), com transformação animada, golpes mais fortes e regras para não ficar desequilibrado (1 por time, só depois de 20 s, custa 50 de energia).
 - **Equipes de 1 a 3 Pokémon**, com troca durante a luta e assistências.
 - **Ultimates cinematográficas** com câmera de cinema, e golpes com animações próprias (Flamethrower, Thunderbolt, Aura Sphere, Shadow Ball, Dragon Rush…).
 - **Multiplayer local** para 2 jogadores na mesma tela, com 2 controles ou teclado, câmera compartilhada e controles remapeáveis.
@@ -62,6 +63,7 @@ O 1º controle conectado é o Jogador 1 e o 2º é o Jogador 2. Sem controle, os
 | Ultimate | Y | Num 8 | Direcional ↑ |
 | Assistências 1 e 2 | Q, E | Num 7, Num 9 | Direcional ←, → |
 | Trocar Pokémon | R | Num Enter | Direcional ↓ |
+| Mega Evolução | G | Num * | L3 (apertar o analógico) |
 | Pausa | Esc | Backspace | Start / Options |
 
 No celular aparecem um analógico à esquerda e os botões à direita.
@@ -149,6 +151,7 @@ Para preparar modelos são necessários **Python 3** e **Node.js** (a ferramenta
 
 Este é um **projeto de fã, feito para estudo, sem fins comerciais**. Pokémon e todos os personagens, nomes e marcas relacionados são © Nintendo / Creatures Inc. / GAME FREAK inc. / The Pokémon Company. Este projeto não é afiliado, patrocinado nem aprovado por essas empresas.
 
+- **Modelos 3D das Megas:** projeto [Pokemon-3D-api/assets](https://github.com/Pokemon-3D-api/assets). Uso educacional e não comercial.
 - **Modelos 3D:** projeto [Pokemon-3D](https://github.com/Sudhanshu-Ambastha/Pokemon-3D), de Sudhanshu Ambastha, que reúne modelos de artistas do Sketchfab (créditos de cada artista nas coleções do autor). Uso educacional e não comercial.
 - **Sprites de efeitos:** [Pokémon Showdown client](https://github.com/smogon/pokemon-showdown-client).
 - **Ícones dos Pokémon:** [PokeAPI sprites](https://github.com/PokeAPI/sprites).

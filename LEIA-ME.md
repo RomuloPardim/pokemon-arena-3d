@@ -1,3 +1,26 @@
+# Pokémon Arena V12 — Mega Evolução com modelos 3D
+
+## O que mudou na V12
+
+- **Mega Evolução de verdade:** apertar **G** (J1), **Num \*** (J2), **L3** no controle ou o botão **M** no celular troca o modelo
+  pelo da forma Mega no meio da animação de transformação (esfera de energia com as cores do arco-íris).
+- **33 formas:** 31 com modelo 3D próprio e animado. Mega Charizard X e Mega Ampharos usam o modelo normal recolorido e maior,
+  porque os modelos Mega deles não têm esqueleto (ficariam parados).
+- **Novas Megas na tabela:** Mega Raichu X, Mega Feraligatr, Mega Darkrai, Mega Greninja, **Kyogre Primitivo** e **Groudon Primitivo**
+  (Reversão Primitiva, com banner próprio).
+- **Golpes da Mega:** anel de luz na cor da Mega a cada golpe, projéteis 30% maiores e com brilho, raios 40% mais largos.
+- **HUD:** o nome muda para "Mega ..." e a marca M fica ao lado dos tipos.
+- **Regras (inalteradas):** 1 Mega por time em cada luta, só depois de 20 s, custa 50 de energia, dura até o fim da luta
+  (continua Mega se trocar e voltar).
+- **Correções:** `atualizarMega` estava dentro do `if (L.surgir < 1)` (a transformação só andava enquanto o Pokémon surgia)
+  e a marca M estava dentro de `.subs` (sumia quando o HUD era redesenhado).
+- **Novos campos em `MEGAS`** (`js/dados.js`): `modelo`, `tinta`, `primal`, `altura`, `escalaModelo`, `enrolar`, `asasBracos`, `voa`,
+  `ampAsa` (0 a 1: asas mais duras, usado nos "jatos" Mega Latias/Latios).
+- Modelos Mega: projeto [Pokemon-3D-api/assets](https://github.com/Pokemon-3D-api/assets), convertidos para meshopt + texturas 512 px
+  (`modelos/mega-<id>.js`; originais em `assets-originais/glb/`).
+
+---
+
 # Pokémon Arena V11 — 83 Pokémon (com 22 lendários)
 
 ## O que mudou na V11

@@ -173,9 +173,10 @@ const PADROES_ANIM = {
 
 /* ----- Cria uma instância (lutador ou vitrine) -----
    Estrutura: raiz (posição/rumo) > corpo (balanço/inclinação) > ajuste (escala/centro) > modelo */
-async function criarInstancia(id, progresso){
+// fichaForcada: usada pela Mega Evolução (modelo da Mega com a ficha do Pokémon, altura maior etc.)
+async function criarInstancia(id, progresso, fichaForcada){
   const gltf = await carregarModelo(id, progresso);
-  const dados = POR_ID[id];
+  const dados = fichaForcada || POR_ID[id];
   const obj = THREE.SkeletonUtils.clone(gltf.scene);
   const materiais = [];
   obj.traverse(o => {
@@ -230,6 +231,7 @@ async function criarInstancia(id, progresso){
   } else {
     inst.ossos = montarRig(obj, dados);
     inst.asasBracos = !!dados.asasBracos;
+    inst.ampAsa = dados.ampAsa ?? 1;          // < 1 = asas mais duras (ex.: Mega Latias, que é um "jato")
     inst.enrolar = dados.enrolar || null;     // serpentes (Rayquaza): curva fixa em cada pedaço da cauda
   }
   // emissivo original (para o "piscar" ao levar dano)
@@ -373,7 +375,7 @@ function animarInstancia(inst, dt, e){
         case 'braco': {
           if (inst.asasBracos && vooAtivo) {        // aves: os "braços" do esqueleto são as asas -> batem como asas
             const flap = Math.sin(asaFase);
-            z = ld*(.18 + flap*(.42 - inst.velSuave*.14));
+            z = ld*(.18 + flap*(.42 - inst.velSuave*.14))*inst.ampAsa;
             x = -.08 - Math.max(0, flap)*.16 + (e.dano || 0)*.3;
             if (e.pose && e.pose.asas) { z = ld*.75; x = -.1; }
             if (e.ataque && j !== 'combo') x -= atkCurva*.35;
@@ -395,7 +397,7 @@ function animarInstancia(inst, dt, e){
           if (e.caido || e.lancado) { x = -.4; z = -ld*.8; }
           rapidez = j === 'combo' ? 22 : 11; break; }
         case 'antebraco':
-          if (inst.asasBracos && vooAtivo) { z = ld*Math.sin(asaFase - .7)*.32; x = -.05; rapidez = 12; break; }   // ponta da asa atrasada: batida mais natural
+          if (inst.asasBracos && vooAtivo) { z = ld*Math.sin(asaFase - .7)*.32*inst.ampAsa; x = -.05; rapidez = 12; break; }   // ponta da asa atrasada: batida mais natural
           x = -atkCurva*.4 - .1*vel*Math.max(0, Math.sin(passo + lado(ld))); rapidez = 9; break;
         case 'cauda': {          // a onda passa do começo para a ponta (cada pedaço atrasado)
           const i = r.idx || 0;
@@ -416,12 +418,12 @@ function animarInstancia(inst, dt, e){
         case 'asa': {
           if (e.pose && e.pose.asas) { z = ld*1.1; rapidez = 10; break; }        // asas abertas (Flamethrower)
           const flap = Math.sin(asaFase);
-          z = (vooAtivo ? ld*(.34 + flap*(.35 - inst.velSuave*.12)) : (e.noAr ? .5*Math.sin(t*12) : Math.sin(t*2.5)*.1 + vel*Math.sin(passo)*.12)*ld);
-          x = vooAtivo ? -.15 - Math.max(0,flap)*.22 : 0;
-          y = vooAtivo ? ld*(.10 + Math.sin(asaFase - .5)*.1) : 0;
+          z = (vooAtivo ? ld*(.34 + flap*(.35 - inst.velSuave*.12)) : (e.noAr ? .5*Math.sin(t*12) : Math.sin(t*2.5)*.1 + vel*Math.sin(passo)*.12)*ld)*inst.ampAsa;
+          x = (vooAtivo ? -.15 - Math.max(0,flap)*.22 : 0)*inst.ampAsa;
+          y = (vooAtivo ? ld*(.10 + Math.sin(asaFase - .5)*.1) : 0)*inst.ampAsa;
           rapidez = vooAtivo ? 12 : 20; break; }
         case 'asa2':
-          z = (vooAtivo ? .25 + Math.sin(asaFase - .65)*.45 : e.noAr ? Math.sin(t*12 - .7)*.4 : Math.sin(t*2.5 - .6)*.07)*ld; rapidez = vooAtivo ? 10 : 20; break;
+          z = (vooAtivo ? .25 + Math.sin(asaFase - .65)*.45 : e.noAr ? Math.sin(t*12 - .7)*.4 : Math.sin(t*2.5 - .6)*.07)*ld*inst.ampAsa; rapidez = vooAtivo ? 10 : 20; break;
         case 'orelha': {
           const mexe = Math.sin(t*.37 + ld) > .7 ? 1 : 0;            // de vez em quando a orelha "mexe"
           x = mexe*Math.max(0, Math.sin(t*9))*.18 - vel*.15; rapidez = 7; break; }

@@ -23,8 +23,8 @@ function montarHUD(){
         <div class="linha2">
           <div class="energia" title="Ultimate"><i></i><span>ULT</span></div>
           <div class="guarda" title="Guarda"><i></i></div>
-          <div class="subs" title="Substituições">
-                    <div class="megaIcone" title="Mega Evolução">M</div>${'<b></b>'.repeat(COMBATE.subsMax)}</div>
+          <div class="subs" title="Substituições">${'<b></b>'.repeat(COMBATE.subsMax)}</div>
+          <div class="megaIcone" title="Mega Evolução">M</div>
         </div>
         <div class="equipe"></div>
       </div>`;
@@ -40,10 +40,10 @@ function montarHUD(){
 function atualizarPaineis(forcar){
   for (const t of [0, 1]) {
     const L = lutador(t), el = $('#pj' + t); if (!L || !el) continue;
-    if (!forcar && el._id === L.p.id && el._ativo === JOGO.ativo[t]) continue;
-    el._id = L.p.id; el._ativo = JOGO.ativo[t];
+    if (!forcar && el._id === L.p.id && el._ativo === JOGO.ativo[t] && el._mega === !!L.mega) continue;
+    el._id = L.p.id; el._ativo = JOGO.ativo[t]; el._mega = !!L.mega;
     el.querySelector('.ret img').src = ICONE(L.p.id);
-    el.querySelector('.nome b').textContent = L.p.nome;
+    el.querySelector('.nome b').textContent = L.mega ? MEGAS[L.p.id].nome : L.p.nome;
     el.querySelector('.tipos').innerHTML = L.p.tipos.map(tp => `<span style="background:${TYPES[tp][1]}">${TYPES[tp][0]}</span>`).join('') +
       `<span class="estilo">${ESTILOS_LUTA[L.p.estilo].nome}</span>`;
     // reserva (assistências)
