@@ -1,6 +1,6 @@
-# Pokémon Arena 3D
+# Pokémon Arena Ultimate Battle
 
-Jogo de luta 3D em arena com Pokémon, inspirado em jogos de luta de anime. Feito em **HTML, CSS e JavaScript puro** com [three.js](https://threejs.org), roda direto no navegador do PC e do celular, sem instalar nada.
+Jogo de luta 3D e 2D em arena com Pokémon, inspirado em jogos de luta de anime. Feito em **HTML, CSS e JavaScript puro** com [three.js](https://threejs.org), roda direto no navegador do PC e do celular, sem instalar nada.
 
 Jogo 3D:
 
@@ -15,8 +15,41 @@ Link para jogar GithubPages: https://romulopardim.github.io/pokemon-arena-3d/jog
 Link para jogar Netlify: https://pokemon-arena-battle-2d.netlify.app
 
 > Projeto pessoal de estudo, **sem fins comerciais** e não afiliado à Nintendo, Game Freak ou The Pokémon Company. Veja [Créditos e aviso legal](#créditos-e-aviso-legal).
+>
+> 🚧 **Projeto em Desenvolvimento**
 
-<!-- Dica: coloque aqui um print ou GIF do jogo, por exemplo: ![Pokémon Arena 3D](docs/screenshot.png) -->
+⚠️ Este projeto está em desenvolvimento ativo e ainda não representa sua versão final.
+
+Pokémon Arena 3D é um projeto pessoal desenvolvido com o objetivo de aprimorar conhecimentos em programação, desenvolvimento de jogos, lógica de combate e gráficos 3D.
+
+Atualmente, o jogo encontra-se em fase Alpha, o que significa que algumas funcionalidades ainda estão sendo implementadas, testadas e aprimoradas.
+
+**🔧 Estado atual**
+
+✅ Versão jogável disponível para testes.
+
+🚧 Mecânicas e funcionalidades em constante evolução.
+
+⚠️ Bugs, falhas visuais e comportamentos inesperados podem ocorrer.
+
+🎮 Melhorias de gameplay, animações e desempenho estão em desenvolvimento.
+
+🎯 Próximos objetivos
+
+ -Corrigir bugs e melhorar a estabilidade.
+
+ -Aprimorar animações de combate e efeitos visuais.
+
+ -Melhorar os mapas e a experiência de gameplay.
+
+ -Otimizar o desempenho em computadores e dispositivos móveis.
+
+ -Expandir e refinar as funcionalidades existentes.
+
+O objetivo deste repositório é documentar a evolução do projeto e meu aprendizado como desenvolvedor.
+
+Feedbacks, sugestões e relatos de bugs são bem-vindos!
+
 
 ## Destaques
 
@@ -59,9 +92,6 @@ npx serve .
 
 Depois acesse `http://localhost:8000`.
 
-### Publicar no Netlify
-
-O repositório já tem um `netlify.toml` que publica a pasta raiz. Basta conectar o repositório no Netlify ou arrastar a pasta para o painel de deploy.
 
 ## Controles
 
