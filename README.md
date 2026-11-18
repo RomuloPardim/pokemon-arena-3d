@@ -1,57 +1,46 @@
-# Pokémon Arena Ultimate Battle
+<div align="center">
 
-Jogo de luta 3D e 2D em arena com Pokémon, inspirado em jogos de luta de anime. Feito em **HTML, CSS e JavaScript puro** com [three.js](https://threejs.org), roda direto no navegador do PC e do celular, sem instalar nada.
+# ⚡ Pokémon Arena Ultimate Battle
 
-Jogo 3D:
+### 🎮 Batalhas Pokémon em arenas 3D e 2D — direto no navegador
 
-Link para jogar GitHub Pages: https://romulopardim.github.io/pokemon-arena-3d/
+Um projeto pessoal de desenvolvimento de jogos feito com **HTML, CSS, JavaScript e Three.js**, com foco em batalhas de arena, multiplayer local e aprendizado.
 
-Link para jogar Netlify: https://pokemo-arena-ultimate-battle.netlify.app/
+<p>
+  <img alt="Status Alpha" src="https://img.shields.io/badge/STATUS-ALPHA%20%7C%20EM%20DESENVOLVIMENTO-ffb000?style=for-the-badge" />
+  <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-ES6%2B-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" />
+  <img alt="Three.js" src="https://img.shields.io/badge/Three.js-3D-000000?style=for-the-badge&logo=threedotjs&logoColor=white" />
+  <img alt="Versus local" src="https://img.shields.io/badge/MULTIPLAYER-LOCAL-2563EB?style=for-the-badge" />
+</p>
 
-Jogo 2D:
+### 🕹️ Jogue agora
 
-Link para jogar GithubPages: https://romulopardim.github.io/pokemon-arena-3d/jogo-2d/
+**[🌟 JOGAR EM 3D — GitHub Pages](https://romulopardim.github.io/pokemon-arena-3d/)** • **[🚀 JOGAR EM 3D — Netlify](https://pokemo-arena-ultimate-battle.netlify.app/)**
 
-Link para jogar Netlify: https://pokemon-arena-battle-2d.netlify.app
+[🎮 Versão 2D — GitHub Pages](https://romulopardim.github.io/pokemon-arena-3d/jogo-2d/) • [Versão 2D — Netlify](https://pokemon-arena-battle-2d.netlify.app/)
 
-> Projeto pessoal de estudo, **sem fins comerciais** e não afiliado à Nintendo, Game Freak ou The Pokémon Company. Veja [Créditos e aviso legal](#créditos-e-aviso-legal).
+</div>
+
+---
+
+> [!WARNING]
+> **🚧 Projeto em desenvolvimento — Alpha**
 >
+> O jogo **já é jogável**, mas ainda está em evolução. Você pode encontrar **bugs, falhas visuais, questões de desempenho e diferenças de balanceamento**. Este repositório documenta o processo de aprendizado e a construção do projeto; ele **não representa a versão final**.
 
-🚧 **Projeto em Desenvolvimento**
+## 📌 Visão geral
 
-⚠️ Este projeto está em desenvolvimento ativo e ainda não representa sua versão final.
+| 🐉 Pokémon | 🌟 Lendários | 🏟️ Arenas | ⚔️ Formas especiais |
+|:---:|:---:|:---:|:---:|
+| **83** | **22** | **7** | **33** |
 
-Pokémon Arena 3D é um projeto pessoal desenvolvido com o objetivo de aprimorar conhecimentos em programação, desenvolvimento de jogos, lógica de combate e gráficos 3D.
+> 💡 **Para quem está conhecendo o projeto:** comece pelos links para jogar e pelos [destaques](#-destaques-do-jogo). Para desenvolvedores, veja a [estrutura](#-estrutura-do-projeto) e [como adicionar conteúdo](#-como-adicionar-coisas).
 
-Atualmente, o jogo encontra-se em fase Alpha, o que significa que algumas funcionalidades ainda estão sendo implementadas, testadas e aprimoradas.
+**Objetivo:** desenvolver uma experiência de combate local divertida, inspirada em jogos de luta de anime, enquanto exploro programação, gráficos 3D, animações, lógica de combate e otimização para desktop e mobile.
 
-**🔧 Estado atual**
+---
 
-✅ Versão jogável disponível para testes.
-
-🚧 Mecânicas e funcionalidades em constante evolução.
-
-⚠️ Bugs, falhas visuais e comportamentos inesperados podem ocorrer.
-
-🎮 Melhorias de gameplay, animações e desempenho estão em desenvolvimento.
-
-**🎯 Próximos objetivos**
-
- -Corrigir bugs e melhorar a estabilidade.
- 
- -Aprimorar animações de combate e efeitos visuais.
- 
- -Melhorar os mapas e a experiência de gameplay.
- 
- -Otimizar o desempenho em computadores e dispositivos móveis.
- 
- -Expandir e refinar as funcionalidades existentes.
-
-O objetivo deste repositório é documentar a evolução do projeto e meu aprendizado como desenvolvedor.
-Feedbacks, sugestões e relatos de bugs são bem-vindos!
-
-
-## Destaques
+## ✨ Destaques do jogo
 
 - **83 Pokémon jogáveis**, sendo **22 lendários** (Arceus, Rayquaza, Kyogre, Groudon, Lugia, Ho-Oh, Dialga, Palkia, Giratina e outros).
 - **Modelos 3D animados por código**: o esqueleto de cada modelo é reconhecido e animado (andar, correr, voar, atacar), com movimento suavizado.
@@ -70,7 +59,7 @@ Feedbacks, sugestões e relatos de bugs são bem-vindos!
 - **8 modos de jogo**, incluindo Torneio Local, Treinamento e Modo Caótico.
 - **Otimizado para celular**: controles de toque, 3 níveis de qualidade gráfica, e modelos que só carregam quando o Pokémon é escolhido.
 
-## Como jogar
+## 🚀 Como jogar
 
 ### Online
 
@@ -93,7 +82,10 @@ npx serve .
 Depois acesse `http://localhost:8000`.
 
 
-## Controles
+## 🎮 Controles
+
+<details>
+<summary><strong>⌨️ Ver tabela de controles para teclado e gamepad</strong></summary>
 
 O 1º controle conectado é o Jogador 1 e o 2º é o Jogador 2. Sem controle, os dois podem usar o teclado. Tudo pode ser trocado na tela **Controles** do menu, e as escolhas ficam salvas no navegador.
 
@@ -115,7 +107,10 @@ No celular aparecem um analógico à esquerda e os botões à direita.
 
 **Técnicas:** apertar Guarda logo antes de um golpe faz um **contra-ataque**. Esquivar no instante certo faz uma **esquiva perfeita** (câmera lenta). O último golpe do combo **lança**, **arremessa** ou **derruba** o rival. No chão, Pular faz **levantar rápido**.
 
-## Modos de jogo
+
+</details>
+
+## 🥊 Modos de jogo
 
 | Modo | Descrição |
 | --- | --- |
@@ -127,7 +122,7 @@ No celular aparecem um analógico à esquerda e os botões à direita.
 | Treinamento | Boneco configurável (parado, andando, pulando, defendendo, esquivando ou lutando) |
 | Modo Caótico | Recargas curtas, Ultimate frequente e meteoros caindo |
 
-## Arenas
+## 🌋 Arenas
 
 | Arena | Destaque |
 | --- | --- |
@@ -139,7 +134,10 @@ No celular aparecem um analógico à esquerda e os botões à direita.
 | Templo dos Dragões | Runas que carregam a Ultimate e lanternas que balançam |
 | Ilhas Celestiais | Correntes de vento que fazem subir e cachoeiras flutuantes |
 
-## Estrutura do projeto
+## 🗂️ Estrutura do projeto
+
+<details>
+<summary><strong>📂 Explorar pastas e arquivos do projeto</strong></summary>
 
 ```
 ├── index.html               telas, HUD e ordem dos scripts
@@ -177,7 +175,10 @@ No celular aparecem um analógico à esquerda e os botões à direita.
 └── docs/                    créditos e guias
 ```
 
-## Como adicionar coisas
+
+</details>
+
+## 🧩 Como adicionar coisas
 
 | O que | Onde |
 | --- | --- |
@@ -190,14 +191,30 @@ No celular aparecem um analógico à esquerda e os botões à direita.
 
 Para preparar modelos são necessários **Python 3** e **Node.js** (a ferramenta usa o glTF-Transform via `npx`).
 
-## Tecnologias
+## 🛠️ Tecnologias
 
 - HTML5, CSS3 e JavaScript (sem frameworks)
 - [three.js](https://threejs.org) r149, com pós-processamento (bloom)
 - Gamepad API, Web Audio API e eventos de toque
 - [glTF-Transform](https://gltf-transform.dev) e meshoptimizer para comprimir os modelos
 
-## Créditos e aviso legal
+## 🧭 Roadmap de melhorias
+
+Estas são ideias e prioridades para as próximas etapas de desenvolvimento — podem mudar conforme os testes:
+
+- [ ] Corrigir bugs reportados e aumentar a estabilidade das partidas.
+- [ ] Refinar colisões, movimentação, combos e resposta dos controles.
+- [ ] Melhorar animações de golpes e efeitos visuais.
+- [ ] Aprimorar arenas, iluminação e interações com o cenário.
+- [ ] Revisar o balanceamento dos Pokémon.
+- [ ] Continuar otimizando o desempenho no PC e no celular.
+- [ ] Adicionar capturas e vídeos reais da gameplay ao README.
+
+**🐛 Encontrou um bug?** [Abra uma issue](https://github.com/RomuloPardim/pokemon-arena-3d/issues) explicando como reproduzir o problema, em qual aparelho/navegador ocorreu e, se possível, com uma captura de tela.
+
+---
+
+## 📜 Créditos e aviso legal
 
 Este é um **projeto de fã, feito para estudo, sem fins comerciais**. Pokémon e todos os personagens, nomes e marcas relacionados são © Nintendo / Creatures Inc. / GAME FREAK inc. / The Pokémon Company. Este projeto não é afiliado, patrocinado nem aprovado por essas empresas.
 
@@ -214,3 +231,14 @@ Este é um **projeto de fã, feito para estudo, sem fins comerciais**. Pokémon 
 A lista completa está em [`docs/CREDITOS.md`](docs/CREDITOS.md).
 
 Se algum detentor de direitos quiser que algum conteúdo seja removido, abra uma *issue* que ele será retirado.
+
+
+---
+
+<div align="center">
+
+**Feito para aprender, experimentar e evoluir.** 💻🎮
+
+[⬆️ Voltar ao topo](#-pokémon-arena-ultimate-battle)
+
+</div>
