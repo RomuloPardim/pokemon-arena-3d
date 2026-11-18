@@ -16,7 +16,8 @@ Link para jogar Netlify: https://pokemon-arena-battle-2d.netlify.app
 
 > Projeto pessoal de estudo, **sem fins comerciais** e não afiliado à Nintendo, Game Freak ou The Pokémon Company. Veja [Créditos e aviso legal](#créditos-e-aviso-legal).
 >
-> 🚧 **Projeto em Desenvolvimento**
+
+🚧 **Projeto em Desenvolvimento**
 
 ⚠️ Este projeto está em desenvolvimento ativo e ainda não representa sua versão final.
 
@@ -27,27 +28,19 @@ Atualmente, o jogo encontra-se em fase Alpha, o que significa que algumas funcio
 **🔧 Estado atual**
 
 ✅ Versão jogável disponível para testes.
-
 🚧 Mecânicas e funcionalidades em constante evolução.
-
 ⚠️ Bugs, falhas visuais e comportamentos inesperados podem ocorrer.
-
 🎮 Melhorias de gameplay, animações e desempenho estão em desenvolvimento.
 
-🎯 Próximos objetivos
+**🎯 Próximos objetivos**
 
  -Corrigir bugs e melhorar a estabilidade.
-
  -Aprimorar animações de combate e efeitos visuais.
-
  -Melhorar os mapas e a experiência de gameplay.
-
  -Otimizar o desempenho em computadores e dispositivos móveis.
-
  -Expandir e refinar as funcionalidades existentes.
 
 O objetivo deste repositório é documentar a evolução do projeto e meu aprendizado como desenvolvedor.
-
 Feedbacks, sugestões e relatos de bugs são bem-vindos!
 
 
