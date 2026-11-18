@@ -28,6 +28,34 @@ Um projeto pessoal de desenvolvimento de jogos feito com **HTML, CSS, JavaScript
 >
 > O jogo **já é jogável**, mas ainda está em evolução. Você pode encontrar **bugs, falhas visuais, questões de desempenho e diferenças de balanceamento**. Este repositório documenta o processo de aprendizado e a construção do projeto; ele **não representa a versão final**.
 
+## 🎬 Gameplay — 3D e 2D
+
+Confira alguns momentos reais de combate, golpes especiais e finalizações nas duas versões do projeto.
+
+<div align="center">
+
+### ⚡ Pokémon Arena 3D
+
+<a href="https://romulopardim.github.io/pokemon-arena-3d/">
+  <img src="assets/gameplay/gameplay-3d.gif" width="640" alt="Gameplay do Pokémon Arena 3D: ataques com efeitos visuais e finalização de batalha">
+</a>
+
+<sub><a href="https://romulopardim.github.io/pokemon-arena-3d/">▶️ Jogar versão 3D</a></sub>
+
+### 🕹️ Pokémon Arena 2D
+
+<a href="https://romulopardim.github.io/pokemon-arena-3d/jogo-2d/">
+  <img src="assets/gameplay/gameplay-2d.gif" width="640" alt="Gameplay do Pokémon Arena 2D: efeitos de combate, Mega Evolução e K.O.">
+</a>
+
+<sub><a href="https://romulopardim.github.io/pokemon-arena-3d/jogo-2d/">▶️ Jogar versão 2D</a></sub>
+
+</div>
+
+> GIFs gravados durante os testes de desenvolvimento (Alpha). O visual e as mecânicas ainda podem mudar.
+
+---
+
 ## 📌 Visão geral
 
 | 🐉 Pokémon | 🌟 Lendários | 🏟️ Arenas | ⚔️ Formas especiais |
