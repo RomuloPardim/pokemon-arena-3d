@@ -28,16 +28,23 @@ Atualmente, o jogo encontra-se em fase Alpha, o que significa que algumas funcio
 **🔧 Estado atual**
 
 ✅ Versão jogável disponível para testes.
+
 🚧 Mecânicas e funcionalidades em constante evolução.
+
 ⚠️ Bugs, falhas visuais e comportamentos inesperados podem ocorrer.
+
 🎮 Melhorias de gameplay, animações e desempenho estão em desenvolvimento.
 
 **🎯 Próximos objetivos**
 
  -Corrigir bugs e melhorar a estabilidade.
+ 
  -Aprimorar animações de combate e efeitos visuais.
+ 
  -Melhorar os mapas e a experiência de gameplay.
+ 
  -Otimizar o desempenho em computadores e dispositivos móveis.
+ 
  -Expandir e refinar as funcionalidades existentes.
 
 O objetivo deste repositório é documentar a evolução do projeto e meu aprendizado como desenvolvedor.
