@@ -16,6 +16,9 @@ Link para jogar: https://romulopardim.github.io/pokemon-arena-3d/
 - **Animação viva em todas as partes**: boca, pés, mãos e dedos se mexem, e penas, cabelo, roupa e barbatanas balançam com física de mola.
 - **Efeitos de golpe por shader**: núcleo de energia de cada tipo, rastro, arcos elétricos, impactos com onda de choque e raios com energia correndo por dentro.
 - **Combate completo**: combos de 3 a 5 golpes, lançamentos, golpes aéreos, golpe carregado, guarda com barra, contra-ataque, esquiva perfeita, substituição, levantar rápido, quebra de combo.
+- **Tela de abertura** com logo animado e Pokémon saindo da Pokébola.
+- **Pokébola de verdade**: os Pokémon saem como silhueta de luz (igual no anime) e voltam com o raio vermelho.
+- **Cinemáticas** na Mega Evolução e na finalização do último Pokémon (câmera lenta, "K.O.!" e close no vencedor).
 - **Mega Evolução e Reversão Primitiva**: 33 formas (31 com modelo 3D próprio), com transformação animada, golpes mais fortes e regras para não ficar desequilibrado (1 por time, só depois de 20 s, custa 50 de energia).
 - **Equipes de 1 a 3 Pokémon**, com troca durante a luta e assistências.
 - **Ultimates cinematográficas** com câmera de cinema, e golpes com animações próprias (Flamethrower, Thunderbolt, Aura Sphere, Shadow Ball, Dragon Rush…).
@@ -112,6 +115,8 @@ No celular aparecem um analógico à esquerda e os botões à direita.
 │   ├── vfx.js               efeitos por shader: núcleo de energia, rastros, arcos, impactos
 │   ├── particulas-kenney.js texturas de partícula CC0 (fogo, fumaça, faísca)
 │   ├── mega.js              Mega Evolução e Reversão Primitiva
+│   ├── cinematicas.js       Pokébola, cinemática da Mega e finalização (K.O.)
+│   ├── abertura.js          tela de abertura
 │   ├── entrada.js           teclado, controles, toque e remapeamento
 │   ├── mobile.js            ajustes para navegador de celular
 │   ├── batalha.js           movimento, golpes especiais, dano e troca

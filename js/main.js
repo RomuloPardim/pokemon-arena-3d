@@ -32,7 +32,7 @@ async function carregarLuta(P){
     }
     limparVitrine(); limparEfeitos();
     criarArena(P.mapa);
-    Object.assign(JOGO, { times, ativo: [0, 0], projeteis: [], agenda: [], tempo: 0, trocaCd: [0, 0], megas: [0, 0], cineAtiva: null, fim: false, pausado: false,
+    Object.assign(JOGO, { times, ativo: [0, 0], projeteis: [], agenda: [], tempo: 0, trocaCd: [0, 0], megas: [0, 0], cineAtiva: null, cineMega: null, finalizando: false, fim: false, pausado: false,
       controle: P.controle.slice(), jogadorDoTime: P.jogadorDoTime.slice(), nomes: P.nomes || null, difId: S.dif, dif: DIFICULDADE[S.dif],
       estat: [novaEstat(), novaEstat()], ultsVistas: new Set(), intro: 0,
       treino: { comportamento: 'parado', vidaInfinita: true, energiaInf: false, semRecarga: false, invencivel: false } });
@@ -56,8 +56,8 @@ function limparLuta(){
   for (const t of [0, 1]) for (const m of JOGO.times[t]) { tirarDeCampo(m); liberarInstancia(m.inst); }
   for (const P of JOGO.projeteis) { cena.remove(P.mesh); if (P.fita) P.fita.liberar(); }
   if (JOGO.cineAtiva) { for (const x of JOGO.cineAtiva.extras) cena.remove(x); JOGO.cineAtiva = null; }
-  JOGO.times = [[], []]; JOGO.projeteis = []; JOGO.agenda = []; JOGO.fim = false; JOGO.pausado = false;
-  CAM.cine = null; document.body.classList.remove('cine', 'velocidade'); ambienteCine(0);
+  JOGO.times = [[], []]; JOGO.projeteis = []; JOGO.agenda = []; JOGO.fim = false; JOGO.pausado = false; JOGO.cineMega = null; JOGO.finalizando = false;
+  CAM.cine = null; document.body.classList.remove('cine', 'velocidade', 'ko'); ambienteCine(0);
   limparEfeitos();
 }
 function voltarAoMenu(){
@@ -106,9 +106,11 @@ function passoBatalha(real){
   for (let i = JOGO.agenda.length - 1; i >= 0; i--) { const a = JOGO.agenda[i]; a.t -= dt; if (a.t <= 0) { JOGO.agenda.splice(i, 1); a.fn(); } }
   if (JOGO.cineAtiva) {
     atualizarCine(dt);
+  } else if (JOGO.cineMega) {
+    atualizarCineMega(dt);
   } else {
     if (JOGO.intro > 0) JOGO.intro -= dt;
-    if (JOGO.relogio && !JOGO.fim && JOGO.intro <= 0) { JOGO.relogio -= dt; if (JOGO.relogio <= 0) { JOGO.relogio = 0; tempoEsgotado(); } }
+    if (JOGO.relogio && !JOGO.fim && !JOGO.finalizando && JOGO.intro <= 0) { JOGO.relogio -= dt; if (JOGO.relogio <= 0) { JOGO.relogio = 0; tempoEsgotado(); } }
     for (const t of [0, 1]) { const L = lutador(t); if (L && L.emCampo) controlarLutador(L, entradaDoTime(t, dt), dt, CAM.yaw); }
     for (const t of [0, 1]) for (const m of JOGO.times[t]) if (m.emCampo) atualizarLutador(m, dt);
     if (JOGO.regras.treino) atualizarTreino(dt);
@@ -141,6 +143,7 @@ async function mostrarNaVitrine(lado, id){
 }
 function limparVitrine(){ for (const l of [0, 1]) { if (VITRINE[l]) liberarInstancia(VITRINE[l]); VITRINE[l] = null; vitrineId[l] = null; } }
 function passoVitrine(dt){
+  if (atualizarAbertura(dt)) return;          // V14: tela de abertura
   vitrineAng += dt*.2;
   const sel = EM_SELECAO();
   if (sel) {
@@ -173,7 +176,7 @@ criarArena(S.mapa);
 montarInicio(); montarConfig(); montarTorneio(); montarPausaResultado();
 $('#btnComecar').onclick = comecarDaSelecao;
 document.querySelectorAll('[data-voltar]').forEach(b => b.addEventListener('click', () => mostrarTela(b.dataset.voltar)));
-mostrarTela('telaInicio');
+iniciarAbertura();                            // V14: abre na tela de abertura
 mostrarNaVitrine(0, escolher([6, 25, 448, 94, 445, 658].filter(id => modeloDisponivel(id))));
 statusControles();
 addEventListener('gamepadconnected', statusControles); addEventListener('gamepaddisconnected', statusControles);

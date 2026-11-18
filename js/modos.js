@@ -41,7 +41,8 @@ function fimDeRodada(venc){
   const P = PARTIDA; P.vitorias[venc]++;
   for (const t of [0, 1]) { P.estat[t].dano += JOGO.estat[t].dano; P.estat[t].maiorCombo = Math.max(P.estat[t].maiorCombo, JOGO.estat[t].maiorCombo); P.estat[t].ults += JOGO.estat[t].ults; }
   SOM.vitoria(); if (ARENA.torcida) ARENA.torcida.empolgacao = 1;
-  confete(lutador(venc));
+  JOGO.finalizando = false;
+  confete(lutador(venc)); cameraVencedor(lutador(venc));
   const acabou = P.vitorias[venc] >= P.precisa;
   banner(acabou ? `${nomeDoTime(venc)} VENCEU!` : `${nomeDoTime(venc)} vence a rodada ${P.rodada}`, corDoTime(venc), true);
   setTimeout(() => { if (acabou) fimDaPartida(venc); else { P.rodada++; limparLuta(); iniciarRodada(); } }, 2600);

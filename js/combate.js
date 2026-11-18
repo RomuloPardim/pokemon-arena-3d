@@ -23,7 +23,7 @@ const _v3 = () => new THREE.Vector3();
 
 function controlarLutador(L, E, dt, yawCam){
   if (!L || !L.emCampo || L.assistindo) return;
-  if (!L.vivo || L.surgir < 1 || JOGO.fim) { mover(L, 0, 0, dt); return; }
+  if (!L.vivo || L.surgir < 1 || JOGO.fim || JOGO.finalizando) { mover(L, 0, 0, dt); return; }
   if (L.megaT > 0) { mover(L, 0, 0, dt); return; }        // Mega Evoluindo: não anda nem ataca
   const A = inimigoDe(L);
   // direção pedida: jogadores = relativo à câmera; IA = já vem no mundo
@@ -261,7 +261,7 @@ function chamarAssist(L, k){
   const atras = m.p.estilo === 'sobrenatural';
   const perp = new THREE.Vector3(Math.cos(L.rumo), 0, -Math.sin(L.rumo));
   const pos = atras ? A.pos.clone().addScaledVector(frenteDe(A), -3) : L.pos.clone().addScaledVector(perp, 2.4);
-  colocarEmCampo(m, pos); m.surgir = 0;
+  colocarEmCampo(m, pos, { rapido: true });
   m.assistindo = { t: 0, modo: emCombo ? 'equipe' : 'golpe', feito: false };
   m.rumo = Math.atan2(A.pos.x - pos.x, A.pos.z - pos.z);
   avisoCombate(L.time, (emCombo ? 'COMBO DE EQUIPE: ' : 'ASSISTÊNCIA: ') + m.p.nome, '#ffd84a'); SOM.assist();
@@ -286,7 +286,7 @@ function atualizarAssist(m, dt){
   }
   if (S_.t > 1.6) {
     const p = centroDe(m); flash('brilho', 0xff4a4a, p.x, p.y, p.z, 2.5, .3, 0, .6); SOM.pokebola();
-    m.assistindo = null; m.dash = null; tirarDeCampo(m);
+    m.assistindo = null; m.dash = null; if (m.silhueta) { m.silhueta = 0; silhuetaFim(m.inst); } recolherPokebola(m);
   }
 }
 function trocarProximo(t){

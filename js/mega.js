@@ -55,6 +55,7 @@ function megaEvoluir(L){
   banner(M.primal ? 'REVERSÃO PRIMITIVA!' : 'MEGA EVOLUÇÃO!', corCSS(M.cor), true);
   SOM.ult(); vibrarTime(L.time, .8, 400);
   esferaMega(L, M);
+  iniciarCineMega(L, M);                    // V14: câmera foca no Pokémon durante a transformação
   return true;
 }
 

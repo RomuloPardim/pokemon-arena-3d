@@ -1,3 +1,21 @@
+# Pokémon Arena V14 — Abertura, Pokébola, Mega com câmera e finalização
+
+## O que mudou na V14
+
+- **Tela de abertura** (`js/abertura.js`): logo animado, câmera passeando pela arena e Pokémon saindo da Pokébola em sequência.
+  Enquanto isso os modelos mais usados vão carregando (barra embaixo). Qualquer tecla, clique, toque ou botão do controle abre os modos.
+- **Pokémon saem da Pokébola** (`js/cinematicas.js`): a bola é lançada de trás do Pokémon, para no ar, treme, abre com um clarão
+  e raios de luz, e o Pokémon aparece como uma **silhueta branca** que cresce e ganha cor (igual no anime).
+  Vale no começo da luta, na troca, depois de um desmaio e nas assistências (versão rápida).
+  Quando sai (troca ou desmaio), volta com o **raio vermelho**.
+- **Mega Evolução com cinemática:** a luta para, entram as barras de cinema, a câmera aproxima, gira em volta do Pokémon enquanto a
+  energia o envolve, a forma Mega aparece no meio da volta e termina num close de baixo para cima com um "rugido".
+  (Em Configurações → Animação das Ultimates → "Acelerada", a cena fica 1,5× mais rápida.)
+- **Finalização no último Pokémon:** congela o golpe, entra câmera lenta, a tela perde cor, aparece um **"K.O.!"** gigante e a câmera
+  gira em volta de quem caiu. Depois a câmera vai para o **vencedor**, que comemora (também quando a rodada acaba por tempo).
+
+---
+
 # Pokémon Arena V13 — Animações mais vivas, Pokémon maiores e efeitos novos
 
 ## O que mudou na V13

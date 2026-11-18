@@ -43,22 +43,24 @@ async function criarMembro(id, time){
   };
 }
 function posInicial(time){ return time === 0 ? new THREE.Vector3(0, 0, 11) : new THREE.Vector3(0, 0, -11); }
-function colocarEmCampo(L, pos){
+function colocarEmCampo(L, pos, opc = {}){
   L.pos.copy(pos); L.vel.set(0, 0, 0); L.y = 0; L.vy = 0; L.noAr = false;
   L.ataque = L.dash = L.esquiva = L.combo = L.perseguir = null; L.danoT = 0; L.inv = 1;
   L.atordoado = 0; L.lancado = false; L.caido = 0; L.quebrado = 0; L.carga = 0; L.guardando = false; L.comboRecebido = 0;
   const alvo = lutador(1 - L.time);
   L.rumo = alvo && alvo !== L ? Math.atan2(alvo.pos.x - pos.x, alvo.pos.z - pos.z) : (L.time === 0 ? Math.PI : 0);
   L.inst.raiz.position.copy(pos); L.inst.raiz.rotation.y = L.rumo; L.inst.raiz.scale.setScalar(.01);
-  cena.add(L.inst.raiz); L.emCampo = true; L.surgir = 0;
-  // brilho da Pokébola
-  const b = new THREE.Mesh(GEO.esfera, matBrilho(0xffffff)); b.position.copy(pos).setY(L.altura*.5);
-  efeito(b, .45, (e, k) => { b.scale.setScalar(L.altura*(.4 + k)); b.material.opacity = 1 - k; });
-  soltar('normal', pos.x, L.altura*.5, pos.z, 30, 5, .35, .6); clarao(0xffffff, pos.x, 2, pos.z, 6, 10, .4);
-  SOM.pokebola();
+  cena.add(L.inst.raiz); L.emCampo = true;
+  // V14: a Pokébola é lançada e abre; o Pokémon só cresce quando ela abre (surgir negativo = esperando)
+  const tAbrir = lancarPokebola({ de: origemTreinador(L, pos), ate: pos, altura: Math.min(1.6, .55 + L.altura*.45), alturaPokemon: L.altura,
+    rapido: !!opc.rapido, cor: 0xffffff, alvo: alvo && alvo !== L ? alvo.pos : null });
+  L.surgir = -tAbrir*2.6;
+  silhuetaInicio(L.inst); L.silhueta = 1; silhueta(L.inst, 1);
+  L.inv = Math.max(L.inv, tAbrir + .5);
 }
 function tirarDeCampo(L){
   cena.remove(L.inst.raiz); L.emCampo = false;
+  if (L.silhueta) { L.silhueta = 0; silhuetaFim(L.inst); }
 }
 
 /* ----- Física / movimento ----- */
@@ -619,8 +621,12 @@ function desmaiar(L){
   L.vivo = false; L.desmaio = .001; L.ataque = L.dash = L.esquiva = L.combo = null; L.guardando = false; SOM.desmaio(); tremer(.5);
   FX.lento = Math.max(FX.lento, .6);
   if (ARENA.torcida) ARENA.torcida.empolgacao = 1;
-  depois(1.6, () => {
-    tirarDeCampo(L);
+  // V14: era o último do time? → finalização com câmera lenta e "K.O.!"
+  const ultimo = !JOGO.fim && !JOGO.finalizando && !JOGO.times[L.time].some(m => m.vivo);
+  if (ultimo) finalizacaoKO(L);
+  depois(ultimo ? 2.1 : 1.6, () => {
+    if (L.silhueta) { L.silhueta = 0; silhuetaFim(L.inst); }
+    if (L.emCampo) recolherPokebola(L);
     const t = L.time, prox = JOGO.times[t].findIndex(m => m.vivo);
     if (prox < 0) { fimDeRodada(t === 0 ? 1 : 0); return; }
     JOGO.ativo[t] = prox;
@@ -636,11 +642,9 @@ function trocarPara(t, i){
   if (!novo || novo === atual || !novo.vivo || novo.assistindo || !atual.vivo || !livre(atual) || JOGO.trocaCd[t] > 0 || JOGO.fim) return;
   JOGO.trocaCd[t] = COMBATE.trocaRecarga*(JOGO.regras.caos ? .4 : 1);
   const pos = atual.pos.clone();
-  // volta para a Pokébola (luz vermelha)
-  const r = new THREE.Mesh(GEO.esfera, matBrilho(0xff3a3a)); r.position.copy(pos).setY(atual.altura*.5);
-  efeito(r, .35, (e, k) => { r.scale.setScalar(atual.altura*(1 - k)*.7); r.material.opacity = 1 - k; });
   novo.en = Math.max(novo.en, atual.en); atual.en = 0;          // a energia da Ultimate passa para quem entra
-  tirarDeCampo(atual);
+  if (atual.silhueta) { atual.silhueta = 0; silhuetaFim(atual.inst); }
+  recolherPokebola(atual);                                       // volta para a Pokébola (raio vermelho)
   JOGO.ativo[t] = i; colocarEmCampo(novo, pos); novo.inv = .5;
   banner(`${nomeDoTime(t)}: vai, ${novo.p.nome}!`, corDoTime(t));
 }
@@ -649,7 +653,9 @@ function trocarPara(t, i){
 function atualizarLutador(L, dt){
   for (let i = 0; i < 4; i++) L.cds[i] = Math.max(0, L.cds[i] - dt);
   L.esqCd = Math.max(0, L.esqCd - dt); L.inv = Math.max(0, L.inv - dt); L.buffT = Math.max(0, L.buffT - dt); L.danoT = Math.max(0, L.danoT - dt);
-  if (L.surgir < 1) { L.surgir = Math.min(1, L.surgir + dt*3.5); L.inst.raiz.scale.setScalar(.01 + L.surgir*.99); }
+  if (L.surgir < 1) { L.surgir = Math.min(1, L.surgir + dt*2.6); const s = Math.max(0, L.surgir); L.inst.raiz.scale.setScalar(.01 + (1 - Math.pow(1 - s, 3))*.99); }
+  // silhueta branca: fica acesa enquanto cresce e depois some (a cor "aparece")
+  if (L.silhueta > 0 && L.surgir >= 0) { L.silhueta = Math.max(0, L.silhueta - dt*(L.surgir >= 1 ? 2.4 : .35)); silhueta(L.inst, L.silhueta); if (!L.silhueta) silhuetaFim(L.inst); }
   atualizarMega(L, dt);
   atualizarCombate(L, dt);
   if (L.ataque) { L.ataque.t += dt/L.ataque.dur; if (L.ataque.t >= 1) L.ataque = null; }
