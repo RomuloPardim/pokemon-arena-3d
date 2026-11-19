@@ -35,6 +35,11 @@ function configurarPos(qualidade){
   if (qualidade === 'alta') {
     POS.bloom = new THREE.UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), .5, .45, .86);
     C.addPass(POS.bloom);
+  } else if (qualidade === 'media' && !DISPOSITIVO_MOVEL) {
+    // V20: bloom leve na qualidade Média, em meia resolução (os efeitos "brilham" sem pesar)
+    const B = new THREE.UnrealBloomPass(new THREE.Vector2(innerWidth/2, innerHeight/2), .38, .4, .88);
+    const tam = B.setSize.bind(B); B.setSize = (w, h) => tam(Math.max(1, w/2), Math.max(1, h/2));
+    POS.bloom = B; C.addPass(B);
   }
   POS.distorcao = new THREE.ShaderPass(SHADER_DISTORCAO);
   C.addPass(POS.distorcao);

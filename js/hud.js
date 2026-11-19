@@ -25,6 +25,7 @@ function montarHUD(){
           <div class="guarda" title="Guarda"><i></i></div>
           <div class="subs" title="Substituições">${'<b></b>'.repeat(COMBATE.subsMax)}</div>
           <div class="megaIcone" title="Mega Evolução">M</div>
+          <div class="vooBar" title="Voo: aperte o pulo 2× rápido"><i></i><span>✈</span></div>
         </div>
         <div class="equipe"></div>
       </div>`;
@@ -87,6 +88,9 @@ function atualizarHUD(dt){
     atraso.style.width = (L._vidaAtraso*100) + '%';
     el.querySelector('.vida .num').textContent = Math.ceil(L.hp);
     const en = el.querySelector('.energia'); en.querySelector('i').style.width = L.en + '%'; en.classList.toggle('cheia', L.en >= 100);
+    { const vb = el.querySelector('.vooBar'); if (vb) { const sabe = sabeVoar(L); vb.classList.toggle('hidden', !sabe);      // V20: tempo de voo / recarga
+      if (sabe) { const voa = L.voando > 0, k = voa ? L.voando/VOO.duracao : 1 - (L.vooCd || 0)/VOO.recarga;
+        vb.querySelector('i').style.width = Math.round(Math.max(0, Math.min(1, k))*100) + '%'; vb.classList.toggle('voando', voa); vb.classList.toggle('pronto', !voa && k >= 1); } } }
     const gd = el.querySelector('.guarda'); gd.querySelector('i').style.width = (L.guardaHP/L.guardaMax*100) + '%'; gd.classList.toggle('quebrada', L.quebrado > 0);
     el.querySelectorAll('.subs b').forEach((b, i) => { b.className = L.subs >= i + 1 ? 'on' : L.subs > i ? 'enchendo' : ''; });
     el.querySelectorAll('.equipe .mini').forEach(mini => {

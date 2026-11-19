@@ -44,7 +44,7 @@ async function criarMembro(id, time){
 }
 function posInicial(time){ return time === 0 ? new THREE.Vector3(0, 0, 11) : new THREE.Vector3(0, 0, -11); }
 function colocarEmCampo(L, pos, opc = {}){
-  L.pos.copy(pos); L.vel.set(0, 0, 0); L.y = 0; L.vy = 0; L.noAr = false;
+  L.pos.copy(pos); L.vel.set(0, 0, 0); L.y = 0; L.vy = 0; L.noAr = false; L.voando = 0; L.vooCd = 0;
   L.ataque = L.dash = L.esquiva = L.combo = L.perseguir = null; L.danoT = 0; L.inv = 1;
   L.atordoado = 0; L.lancado = false; L.caido = 0; L.quebrado = 0; L.carga = 0; L.guardando = false; L.comboRecebido = 0;
   const alvo = lutador(1 - L.time);
@@ -71,7 +71,7 @@ function mover(L, dx, dz, dt){
   // dx,dz = direção desejada (comprimento 0..1)
   const gelo = !L.noAr && !L.p.voa && perigoEm(L.pos.x, L.pos.z) === 'gelo';
   const lama = !L.noAr && !L.p.voa && perigoEm(L.pos.x, L.pos.z) === 'lama';
-  const vMax = (lama ? .55 : 1)*L.velBase*(L.buffT > 0 ? 1.25 : 1)*(L.itemVelT > 0 ? 1.3 : 1)*(L.ataque && L.ataque.t < .5 ? .45 : 1)*(L.danoT > 0 ? .5 : 1)*(JOGO.regras.caos ? 1.15 : 1);
+  const vMax = (lama ? .55 : 1)*L.velBase*(L.buffT > 0 ? 1.25 : 1)*(L.itemVelT > 0 ? 1.3 : 1)*(L.ataque && L.ataque.t < .5 ? .45 : 1)*(L.danoT > 0 ? .5 : 1)*(JOGO.regras.caos ? 1.15 : 1)*(L.voando > 0 ? VOO.velocidade : 1);
   const acel = gelo ? 2.2 : 14;
   const preso = L.atordoado > 0 || L.lancado || L.caido > 0 || L.quebrado > 0;
   if (preso && !L.dash && !L.esquiva) {
@@ -89,8 +89,9 @@ function mover(L, dx, dz, dt){
     L.vel.x += (dx*vMax - L.vel.x)*k; L.vel.z += (dz*vMax - L.vel.z)*k;
   }
   L.pos.x += L.vel.x*dt; L.pos.z += L.vel.z*dt;
-  // pulo
-  if (L.noAr || L.y > 0) {
+  // pulo (V20: voando, a mola do voo substitui a gravidade)
+  if (L.voando > 0 && fisicaVoo(L, dt)) { /* no ar, voando */ }
+  else if (L.noAr || L.y > 0) {
     L.vy -= GRAVIDADE*dt; L.y += L.vy*dt;
     if (L.y <= 0) {
       L.y = 0; L.vy = 0; L.noAr = false; poeira(L.pos.x, L.pos.z, 8);
@@ -410,6 +411,7 @@ function atualizarProjeteis(dt){
     if (P.sombra) for (let k = 0; k < 2; k++) FUMACA.add({ x: P.pos.x + rnd(-.3, .3), y: P.pos.y + rnd(-.3, .3), z: P.pos.z + rnd(-.3, .3), vx: 0, vy: rnd(0, 1), vz: 0, cor: 0x2a1240, tam: .9, vida: .5, cel: 'fumaca0', cresce: 1.2 });
     P.vida -= dt; P.t += dt; P.pos.addScaledVector(P.vel, dt); P.mesh.position.copy(P.pos);
     if (P.fita) P.fita.empurrar(P.pos);
+    brilhoProjetil(P, dt);                                                   // V20: purpurina no caminho
     if (P.g.tipo === 'electric' && Math.random() < .55*QUAL.particulas) {      // arcos elétricos saindo da bola
       const d = new THREE.Vector3(rnd(-1, 1), rnd(-1, 1), rnd(-1, 1)).normalize().multiplyScalar(P.raio*rnd(1.6, 2.6));
       arcoEletrico(P.pos, P.pos.clone().add(d), .08 + P.raio*.08, .08, P.raio*.4);
@@ -461,6 +463,7 @@ function atualizarProjeteis(dt){
     if (bateu) {
       explosao(P.g.tipo, P.pos.x, Math.max(.3, P.pos.y), P.pos.z, P.raio*2.6);
       impactoVFX(P.g.tipo, P.pos.x, Math.max(.3, P.pos.y), P.pos.z, Math.max(.6, P.raio*1.7), P.vel);
+      impactoEnfeitado(P.g.tipo, P.pos.x, Math.max(.3, P.pos.y), P.pos.z, Math.max(.6, P.raio*1.4));   // V20
       if (P.fita) { soltarFita(P.fita, .22); P.fita = null; }
       if (QUAL.particulas > .55) {
         flash('anel', e.c2, P.pos.x, P.pos.y, P.pos.z, P.raio*5, .27);
@@ -653,7 +656,7 @@ function trocarPara(t, i){
 /* ----- Atualização de um lutador (tempos, animação) ----- */
 function atualizarLutador(L, dt){
   for (let i = 0; i < 4; i++) L.cds[i] = Math.max(0, L.cds[i] - dt);
-  L.esqCd = Math.max(0, L.esqCd - dt); L.inv = Math.max(0, L.inv - dt); L.buffT = Math.max(0, L.buffT - dt); L.danoT = Math.max(0, L.danoT - dt);
+  L.esqCd = Math.max(0, L.esqCd - dt); L.inv = Math.max(0, L.inv - dt); L.buffT = Math.max(0, L.buffT - dt); L.danoT = Math.max(0, L.danoT - dt); L.vooCd = Math.max(0, (L.vooCd || 0) - dt);
   if (L.surgir < 1) { L.surgir = Math.min(1, L.surgir + dt*2.6); const s = Math.max(0, L.surgir); L.inst.raiz.scale.setScalar(.01 + (1 - Math.pow(1 - s, 3))*.99); }
   // silhueta branca: fica acesa enquanto cresce e depois some (a cor "aparece")
   if (L.silhueta > 0 && L.surgir >= 0) { L.silhueta = Math.max(0, L.silhueta - dt*(L.surgir >= 1 ? 2.4 : .35)); silhueta(L.inst, L.silhueta); if (!L.silhueta) silhuetaFim(L.inst); }
@@ -692,6 +695,6 @@ function atualizarLutador(L, dt){
   // inclina nas curvas (como uma moto)
   let dr = L.rumo - (L._rumoAnt ?? L.rumo); while (dr > Math.PI) dr -= Math.PI*2; while (dr < -Math.PI) dr += Math.PI*2;
   L._rumoAnt = L.rumo; L.incl = (L.incl || 0) + (THREE.MathUtils.clamp(-dr/Math.max(dt, .001)*.035, -.22, .22)*Math.min(1, v) - (L.incl || 0))*Math.min(1, dt*8);
-  animarInstancia(L.inst, dt, { vel: L.esquiva ? 0 : Math.min(1.2, v), velMS: L.esquiva ? 0 : Math.hypot(L.vel.x, L.vel.z), noAr: L.noAr, alturaPulo: L.y, ataque: L.ataque, dano: Math.max(L.danoT/.35, L.atordoado > 0 ? .6 : 0), desmaio: L.desmaio, voa: L.p.voa, inclinar: L.incl,
+  animarInstancia(L.inst, dt, { vel: L.esquiva ? 0 : Math.min(1.2, v), velMS: L.esquiva ? 0 : Math.hypot(L.vel.x, L.vel.z), noAr: L.noAr, alturaPulo: L.y, ataque: L.ataque, dano: Math.max(L.danoT/.35, L.atordoado > 0 ? .6 : 0), desmaio: L.desmaio, voa: L.p.voa || L.voando > 0, voando: L.voando > 0, vy: L.vy, esquiva: L.esquiva ? Math.min(1, 1 - L.esquiva.t/.22) : 0, inclinar: L.incl,
     guarda: L.guardando, carga: L.carga ? Math.min(1, L.carga/1.2) : 0, caido: L.caido > 0 ? Math.min(1, L.caidoT*6) : 0, lancado: L.lancado, quebrado: L.quebrado > 0, pose: L.pose });
 }

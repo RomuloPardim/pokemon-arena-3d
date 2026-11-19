@@ -1,3 +1,23 @@
+# Pokémon Arena V20 — Câmera atrás do Pokémon, voo, movimento fluido e efeitos enfeitados
+
+Inspirado no PokeBrawl (Cobblemon), mantendo o visual do jogo.
+
+- **Câmera "seguir"** (`js/camera.js`, `SEGUIR`): quando só você joga (1 Jogador, Treinamento, Torneio ou Aleatória contra a CPU),
+  a câmera fica atrás e um pouco acima do seu Pokémon, olhando para o rival — o rival fica no meio da tela e você embaixo.
+  Gira sozinha para não perder o rival de vista e sobe junto quando você voa. W anda na direção do rival, A/D giram em volta dele.
+  Configurações → Câmera → "Lateral clássica" volta a câmera antiga. No 2 jogadores continua a lateral.
+- **Voo** (`js/combate.js`, `VOO`): Pokémon que voam apertam o **pulo duas vezes rápido** e voam por 4,5 s
+  (segurar o pulo sobe mais; dois toques de novo pousa; atacar voando faz um mergulho com golpe aéreo).
+  Recarga de 6 s. Barra ✈ no placar mostra o tempo. A CPU também voa.
+- **Movimento mais fluido** (`js/modelos.js`, `MOV`): o corpo usa molas (chega e passa um pouquinho do ponto),
+  corrida diferente de andar (inclina mais, pisada marcada), inclina ao arrancar e ao frear, pulo em fases
+  (estica ao subir, encolhe no topo, abre na queda, amassa no pouso), esquiva com giro, peso passando de um pé
+  para o outro parado e inclinação nas curvas quando voa.
+- **Efeitos enfeitados** (`js/enfeites.js`, `ENFEITE`): brilho e purpurina sendo puxados antes do golpe, purpurina no caminho
+  dos projéteis, estrela de luz + faíscas esticadas + purpurina no acerto, energia correndo pelos raios e faíscas nos combos.
+- **Brilho (bloom) leve na qualidade Média** (meia resolução, só no computador). No Automático, se o FPS cair,
+  ele desliga sozinho e volta quando melhorar.
+
 # Pokémon Arena V19 — Ajustes finos e fogo de verdade na cauda do Charizard
 
 - **Pikachu** estava deitado: o modelo agora fica em pé (`rotModelo` na ficha).

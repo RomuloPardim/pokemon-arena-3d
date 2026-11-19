@@ -396,6 +396,9 @@ function tocar(inst, nome, fade = .18, vel = 1){
 
 /* ----- Atualiza a animação a cada quadro -----
    e = { vel: 0..1 (quão rápido anda), noAr, ataque: {t: 0..1, jeito} | null, dano: 0..1, desmaio: 0..1 } */
+/* V20: corpo inteiro — mola = rapidez da pose (maior = mais "duro"), amortecer < 1 passa um pouco do ponto (mais fluido).
+   Os outros números (1 = padrão) aumentam ou diminuem cada tipo de movimento. */
+const MOV = { mola: 170, amortecer: .62, corrida: 1, arranque: 1, pulo: 1, esquiva: 1, parado: 1 };
 /* V18: quanto cada parte "solta" mexe (1 = padrão). Aumente para ficar mais vivo, diminua se algum modelo exagerar. */
 const VIDA = { cauda: 1.25, orelha: 1.2, apendice: 1.3, cabeca: 1.15, inercia: 1.3 };
 function animarInstancia(inst, dt, e){
@@ -439,6 +442,30 @@ function animarInstancia(inst, dt, e){
     case 'buff':                  // pulsa de energia
       sy = 1 + .1*Math.abs(Math.sin(t1*Math.PI*3)); sx = sz = 1 - .04*Math.abs(Math.sin(t1*Math.PI*3)); inclX -= .15*Math.sin(t1*Math.PI); break;
   }
+  // ----- V20: movimento mais fluido (uma pose para cada coisa) -----
+  const vs = inst.velSuave || 0, corre = THREE.MathUtils.clamp((vs - .55)/.5, 0, 1);
+  // aceleração (suavizada): inclina para frente ao arrancar e para trás ao frear
+  const acel = THREE.MathUtils.clamp((vs - (inst._vsAnt ?? vs))/Math.max(dt, 1e-3), -8, 8); inst._vsAnt = vs;
+  inst._acel = (inst._acel || 0) + (acel - (inst._acel || 0))*(1 - Math.exp(-dt*10));
+  if (!j && !e.noAr) {
+    inclX += corre*.13*MOV.corrida + THREE.MathUtils.clamp(inst._acel*.035, -.2, .22)*MOV.arranque;
+    const pisada = Math.abs(Math.cos(f));                              // amassa um pouco a cada pisada correndo
+    sy *= 1 - pisada*.035*corre*MOV.corrida; sx *= 1 + pisada*.018*corre*MOV.corrida;
+  }
+  // pulo em fases: impulso (estica) → topo (encolhe) → queda (estica e abre)
+  if (e.noAr && !vooAtivo && !e.lancado && e.vy !== undefined && !j) {
+    const vy = e.vy;
+    if (vy > 3) { const k = Math.min(1, (vy - 3)/8); sy *= 1 + .12*k*MOV.pulo; sx *= 1 - .06*k*MOV.pulo; sz *= 1 - .06*k*MOV.pulo; inclX -= .1*k; }
+    else if (vy > -3) { sy *= 1 - .06*MOV.pulo; inclX += .1*MOV.pulo; }
+    else { const k = Math.min(1, (-vy - 3)/10); sy *= 1 + .07*k*MOV.pulo; inclX -= .06*k; }
+  }
+  // esquiva: abaixa e gira rápido
+  if (e.esquiva > 0) { const k = Math.sin(e.esquiva*Math.PI); giroY += (inst._esqLado || 1)*e.esquiva*Math.PI*2*MOV.esquiva; sy *= 1 - .18*k; sx *= 1 + .08*k; sz *= 1 + .08*k; }
+  else inst._esqLado = Math.random() < .5 ? 1 : -1;
+  // parado: passa o peso de um pé para o outro
+  const parado = Math.max(0, 1 - vs*4)*(e.noAr || j ? 0 : 1);
+  // apanhou: torce o corpo de leve
+  if (e.dano) giroY += Math.sin(inst.t*31)*.06*e.dano;
   // guarda, carga, caído, lançado
   if (e.guarda) { inclX += .12; sy *= .92; sx *= 1.04; }
   if (e.carga) { sy *= 1 - .12*e.carga; sx *= 1 + .06*e.carga; inclX += .1; tremeX = Math.sin(inst.t*80)*.02*A*e.carga; }
@@ -450,7 +477,8 @@ function animarInstancia(inst, dt, e){
   // pouso do pulo: amassa um pouco
   if (inst._noAr && !e.noAr) inst.pouso = 1;
   inst._noAr = !!e.noAr; inst.pouso = Math.max(0, (inst.pouso || 0) - dt*5);
-  sy *= 1 - inst.pouso*.16; sx *= 1 + inst.pouso*.08; sz *= 1 + inst.pouso*.08;
+  sy *= 1 - inst.pouso*.22*MOV.pulo; sx *= 1 + inst.pouso*.1*MOV.pulo; sz *= 1 + inst.pouso*.1*MOV.pulo;   // V20: pouso mais marcado
+  if (inst.pouso > .6) inclX += .12*MOV.pulo;
   // quem voa fica flutuando
   // Voo constante com batidas de asa, planeio e impulso sutil nas acelerações.
   const asaFase = t*(vooAtivo ? (4.5 - inst.velSuave*1.2) : 2.6);
@@ -462,14 +490,18 @@ function animarInstancia(inst, dt, e){
     inst.sombraVoo.material.opacity = .26 - Math.min(.11, voo*.022);
   }
   // suaviza tudo que não precisa ser instantâneo
-  const S = inst.sm || (inst.sm = { inclX: 0, sobe: 0, sx: 1, sy: 1, sz: 1, rolar: 0 });
-  const ks = 1 - Math.exp(-dt*(e.dano ? 20 : 12));
-  S.inclX += (inclX - S.inclX)*ks; S.sobe += (sobe - S.sobe)*ks; S.sx += (sx - S.sx)*ks; S.sy += (sy - S.sy)*ks; S.sz += (sz - S.sz)*ks;
-  const rolar = (e.inclinar || 0) + (inst.mixer ? 0 : Math.sin(f)*.045*Math.min(1, vel));      // balanço de um pé para o outro
+  const S = inst.sm || (inst.sm = { inclX: 0, sobe: 0, sx: 1, sy: 1, sz: 1, rolar: 0, v: { inclX: 0, sobe: 0, sx: 0, sy: 0, sz: 0 } });
+  // V20: em vez de só "perseguir" a pose, cada valor é uma mola: chega rápido e passa um pouquinho (follow-through)
+  const dtm = Math.min(dt, .05), kM = e.dano ? 320 : MOV.mola, cM = 2*MOV.amortecer*Math.sqrt(kM);
+  for (const [n, alvo] of [['inclX', inclX], ['sobe', sobe], ['sx', sx], ['sy', sy], ['sz', sz]]) {
+    S.v[n] += ((alvo - S[n])*kM - S.v[n]*cM)*dtm; S[n] += S.v[n]*dtm;
+  }
+  const rolar = (e.inclinar || 0)*(vooAtivo ? 1.8 : 1) + (inst.mixer ? 0 : Math.sin(f)*(.045 + .035*corre)*Math.min(1, vel)*MOV.corrida)
+    + Math.sin(t*.8)*.035*parado*MOV.parado;                                     // balanço de um pé para o outro / peso parado
   S.rolar += (rolar - S.rolar)*(1 - Math.exp(-dt*(vooAtivo ? 7 : 10)));
   c.position.set(tremeX + (e.dano ? Math.sin(inst.t*70)*.04*e.dano : 0),
-    (inst.mixer || e.voa ? 0 : Math.abs(Math.sin(f))*.05*A*Math.min(1, vel)) + (e.alturaPulo || 0) + S.sobe + voo, 0);
-  c.rotation.set(S.inclX + (vooAtivo ? -.04 - inst.velSuave*.095 : 0), giroY + (vooAtivo ? Math.sin(t*.8)*.045 : 0), (e.desmaio || 0)*1.45 + S.rolar + (vooAtivo ? Math.sin(t*1.3)*.035 : 0));
+    (inst.mixer || e.voa ? 0 : Math.abs(Math.sin(f))*(.05 + .05*corre*MOV.corrida)*A*Math.min(1, vel)) + (e.alturaPulo || 0) + S.sobe + voo, 0);
+  c.rotation.set(S.inclX + (vooAtivo ? -.04 - inst.velSuave*.095 - THREE.MathUtils.clamp((e.voando ? e.vy || 0 : 0)*.03, -.2, .25) : 0), giroY + (vooAtivo ? Math.sin(t*.8)*.045 : 0), (e.desmaio || 0)*1.45 + S.rolar + (vooAtivo ? Math.sin(t*1.3)*.035 : 0));
   const resp = inst.mixer ? 1 : 1 + Math.sin(t*2.2)*.018*(1 - Math.min(1, vel));
   c.scale.set(S.sx/Math.sqrt(resp), S.sy*resp, S.sz/Math.sqrt(resp));
   if (e.desmaio) c.position.y -= e.desmaio*.25*A;

@@ -71,6 +71,8 @@ function avaliarDesempenho(dt){
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, QUAL.pixel * ESCALA_AUTO));
       if (typeof ajustarTamanhoPos === 'function') ajustarTamanhoPos();
     }
+    // V20: se mesmo assim estiver pesado, desliga o bloom leve (volta quando melhorar)
+    if (typeof POS !== 'undefined' && POS.bloom) { if (fps < 40 && ESCALA_AUTO <= minimo + .01) POS.bloom.enabled = false; else if (fps > 56) POS.bloom.enabled = true; }
     // Também diminui os espectadores desenhados quando a GPU/CPU não acompanha.
     if (ARENA && ARENA.torcida) {
       const fator = fps < 36 ? .55 : fps < 48 ? .75 : 1;

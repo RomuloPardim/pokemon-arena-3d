@@ -11,7 +11,7 @@ const S = {
   qualidade: guardar.get('qualidade', 'auto'), mostrarFps: guardar.get('mostrarFps', false), ultAnim: guardar.get('ultAnim', 'completa'), tempo: guardar.get('tempo', 99),
   vibracao: guardar.get('vibracao', true), som: guardar.get('som', true), musica: guardar.get('musica', true),
   torneioQtd: guardar.get('torneioQtd', 4), torneioHumanos: guardar.get('torneioHumanos', 1), p2Teclado: guardar.get('p2Teclado', false),
-  retratos: guardar.get('retratos', 'animado'), visual: guardar.get('visualV18', 'modelos'),   // V18: a luta volta aos modelos 3D (Configurações muda)
+  retratos: guardar.get('retratos', 'animado'), camera: guardar.get('camera', 'seguir'), visual: guardar.get('visualV18', 'modelos'),   // V18: a luta volta aos modelos 3D (Configurações muda)
 };
 if (!MAPAS[S.mapa]) S.mapa = 'estadio';
 // Migração da V8: primeiro acesso mobile usa Auto, mesmo que a V8 guardasse Média/Alta.

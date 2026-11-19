@@ -66,11 +66,17 @@ function controlarLutador(L, E, dt, yawCam){
 
   // ----- pulo (pulo duplo e planar para quem voa) -----
   if (d.has('pulo')) {
-    if (L.posLancar > 0 && A && A.lancado) superSalto(L, A);
+    // V20: dois toques rápidos no pulo = voar (só Pokémon que voam). Durante o voo, dois toques = pousar.
+    const agora = JOGO.tempo, duplo = agora - (L._ultPulo ?? -9) < VOO.toqueDuplo; L._ultPulo = duplo ? -9 : agora;
+    if (L.voando > 0 && duplo) terminarVoo(L, true);
+    else if (duplo && podeVoar(L)) iniciarVoo(L);
+    else if (L.voando > 0) { /* voando: segurar o pulo sobe */ }
+    else if (L.posLancar > 0 && A && A.lancado) superSalto(L, A);
     else if (!L.noAr) pular(L);
     else if (L.p.voo && !L.puloDuplo) { L.puloDuplo = true; L.vy = VEL_PULO*.9; SOM.pulo(); soltar('flying', L.pos.x, L.y, L.pos.z, 12, 3, .4, .4); }
   }
-  if (L.p.voo && L.noAr && E.agora.has('pulo') && L.vy < -2 && !L.lancado) L.vy = -2;     // plana
+  if (L.p.voo && L.noAr && !(L.voando > 0) && E.agora.has('pulo') && L.vy < -2 && !L.lancado) L.vy = -2;     // plana
+  L.vooSobe = L.voando > 0 && E.agora.has('pulo');                               // V20: segurar o pulo voando = subir
   // ----- esquiva (com direção) ou perseguição (sem direção) -----
   if (d.has('esquiva')) {
     const parado = Math.hypot(mx, mz) < .3, dist = A ? Math.hypot(A.pos.x - L.pos.x, A.pos.z - L.pos.z) : 0;
@@ -78,6 +84,7 @@ function controlarLutador(L, E, dt, yawCam){
     else esquivar(L, mx, mz);
   }
   // ----- ataque corpo a corpo -----
+  if (d.has('ataque') && L.voando > 0) terminarVoo(L, true);          // V20: atacar voando = mergulho com golpe aéreo
   if (d.has('ataque')) {
     if (L.posLancar > 0 && A && A.lancado && !L.noAr) superSalto(L, A);
     else pedirGolpe(L);
@@ -327,6 +334,7 @@ function efeitoGolpeCombo(L, A, h, i){
   flash('faisca', 0xffffff, p.x, p.y, p.z, forte ? 3.4 : 2.2, .14, 6);
   flash('brilho', e.c1, p.x, p.y, p.z, forte ? 3 : 1.8, .2, 0, .5);
   soltar(L.p.tipos[0], p.x, p.y, p.z, forte ? 16 : 7, forte ? 6 : 4, .35, .4);
+  faiscaCombo(L.p.tipos[0], p.x, p.y, p.z, forte);                    // V20: faíscas esticadas
   switch (h.efeito) {
     case 'garra': flash('leftclaw', 0xffffff, p.x, p.y, p.z, 2, .2); break;
     case 'mordida': efeitoContato({ tipo: L.p.tipos[0], visual: 'mordida' }, p); break;
@@ -375,3 +383,37 @@ function bonecoSubstituto(x, y, z, alt){
   for (let k = 0; k < 16; k++) FUMACA.add({ x, y: y + .8, z, vx: rnd(-3, 3), vy: rnd(0, 3), vz: rnd(-3, 3), cor: 0xffffff, tam: 1.1, vida: .6, cel: 'fumaca1', cresce: 1.4 });
 }
 function vibrarTime(t, forca, ms){ if (JOGO.controle[t] === 'jogador') vibrar(JOGO.jogadorDoTime[t], forca, ms); }
+
+/* =========================================================
+   V20: VOO — Pokémon que voam apertam o PULO duas vezes rápido e voam por alguns segundos.
+   Voando: fica no alto, anda mais rápido e pode usar os golpes. Segurar o pulo sobe mais.
+   Dois toques de novo = pousa. Acabou o tempo (ou levou um golpe forte) = desce planando.
+   ========================================================= */
+const VOO = { toqueDuplo: .33, duracao: 4.5, recarga: 6, altura: 3.2, alturaMax: 6.5, velocidade: 1.25 };
+const sabeVoar = L => !!(L.p.voa || L.p.voo);
+const podeVoar = L => sabeVoar(L) && L.vivo && !(L.voando > 0) && !((L.vooCd || 0) > 0) && livre(L) && !L.guardando && !L.combo && !L.carga && !L.dash;
+function iniciarVoo(L){
+  L.voando = VOO.duracao; L.noAr = true; L.vy = Math.max(L.vy, 10); L.puloDuplo = true;
+  SOM.pulo(); tremer(.05);
+  // rajada de vento saindo do chão
+  onda(L.pos.x, L.pos.z, 3.2, 0xdfeaff, .4);
+  for (let i = 0; i < 18; i++) { const a = i/18*Math.PI*2;
+    part('listra', { x: L.pos.x + Math.cos(a)*.6, y: L.y + .3, z: L.pos.z + Math.sin(a)*.6, vx: Math.cos(a)*5, vy: rnd(2, 5), vz: Math.sin(a)*5, cor: 0xe8f2ff, tam: .5, vida: .4, atrito: 2.5, brilhar: true }); }
+  poeira(L.pos.x, L.pos.z, 14);
+  if (L.inst) numeroDano('VOANDO!', centroDe(L), 'buff');
+}
+function terminarVoo(L, mergulho){
+  if (!(L.voando > 0)) return;
+  L.voando = 0; L.vooCd = VOO.recarga; L.vy = mergulho ? -14 : -1;
+}
+// física do voo (chamada em mover, no lugar da gravidade enquanto voa)
+function fisicaVoo(L, dt){
+  L.voando -= dt;
+  if (L.voando <= 0 || !L.vivo || L.lancado || L.atordoado > 0 || L.caido > 0 || L.desmaio) { L.voando = .0001; terminarVoo(L, false); return false; }
+  const alvo = Math.min(VOO.alturaMax, L.vooSobe ? Math.max(L.y + 2, VOO.altura + 2) : VOO.altura + L.altura*.15);
+  L.vy += ((alvo - L.y)*12 - L.vy*5.5)*dt;                    // mola: sobe/desce suave até a altura
+  L.y += L.vy*dt; L.noAr = true;
+  // vento das asas
+  if (Math.random() < dt*10*QUAL.particulas) part('listra', { x: L.pos.x + rnd(-.6, .6), y: L.y + L.altura*.5, z: L.pos.z + rnd(-.6, .6), vx: -L.vel.x*.3, vy: -2, vz: -L.vel.z*.3, cor: 0xeef4ff, tam: .35, vida: .3, brilhar: true });
+  return true;
+}

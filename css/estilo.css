@@ -386,3 +386,11 @@ body.ko #palco canvas { filter: saturate(.35) contrast(1.15); transition: filter
 /* V16: retratos animados — o GIF é pequeno; mantém proporção e não borra */
 img.retr { object-fit: contain; image-rendering: auto; }
 .carta img.retr { transform: scale(1.05); }
+
+/* V20: barra de voo */
+.vooBar { position: relative; width: 34px; height: 10px; background: #000a; border-radius: 3px; overflow: hidden; border: 1px solid #cfe6ff55; }
+.vooBar i { position: absolute; left: 0; top: 0; bottom: 0; background: #7d8fa8; }
+.vooBar span { position: absolute; inset: 0; font-size: 8px; display: flex; align-items: center; justify-content: center; }
+.vooBar.pronto { border-color: #cfe6ff; } .vooBar.pronto i { background: linear-gradient(90deg, #8fd0ff, #ffffff); }
+.vooBar.voando { border-color: #ffffff; box-shadow: 0 0 8px #bfe4ff; } .vooBar.voando i { background: linear-gradient(90deg, #5fb8ff, #e8f6ff); }
+.vooBar.hidden { display: none; }

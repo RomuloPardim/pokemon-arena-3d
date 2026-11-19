@@ -16,9 +16,45 @@ const CAM = {
 };
 const _cm = new THREE.Vector3(), _cn = new THREE.Vector3(), _cp = new THREE.Vector3(), _ca = new THREE.Vector3();
 
+/* ----- V20: câmera "seguir" (atrás do seu Pokémon, olhando para o rival) -----
+   Usada quando só há 1 jogador humano (1 Jogador, Treinamento, Torneio/Aleatória contra a CPU).
+   Configurações → Câmera muda para a lateral clássica. */
+const SEGUIR = { atras: 4.2, porAltura: 1.25, cima: 2.3, ombro: .7, ombroAltura: .55, olharRival: .7, suave: 6, giro: 5 };
+function timeHumanoUnico(){
+  if (!JOGO.controle) return -1;
+  const h = [0, 1].filter(t => JOGO.controle[t] === 'jogador');
+  return h.length === 1 ? h[0] : -1;
+}
+const usarCameraSeguir = () => (typeof S === 'undefined' || S.camera !== 'classica') && timeHumanoUnico() >= 0;
+function alvoCameraSeguir(dt, P, Q){
+  // direção do rival para o meu Pokémon: a câmera fica "atrás" dessa linha
+  let dx = P.pos.x - Q.pos.x, dz = P.pos.z - Q.pos.z; const dist = Math.hypot(dx, dz);
+  const yawQuer = dist > 1.2 ? Math.atan2(dx, dz) : (CAM.yawSeg ?? Math.atan2(dx, dz));
+  if (CAM.yawSeg === undefined) CAM.yawSeg = yawQuer;
+  let dy = yawQuer - CAM.yawSeg; while (dy > Math.PI) dy -= Math.PI*2; while (dy < -Math.PI) dy += Math.PI*2;
+  // gira mais rápido quando o rival passa pelo lado (não perde ele de vista), devagar no resto
+  CAM.yawSeg += dy*(1 - Math.exp(-dt*SEGUIR.giro*(1 + Math.abs(dy)*1.5)));
+  const ux = Math.sin(CAM.yawSeg), uz = Math.cos(CAM.yawSeg), rx = uz, rz = -ux;      // atrás e "direita" da câmera
+  const A = P.altura, longe = (SEGUIR.atras + A*SEGUIR.porAltura + Math.min(6, dist*.12))*(1 - CAM.zoom*.25);
+  const yP = P.y*.75;                                                     // voando, a câmera sobe junto (um pouco menos)
+  _cp.set(P.pos.x + ux*longe + rx*(SEGUIR.ombro + A*SEGUIR.ombroAltura), yP + SEGUIR.cima + A*1.2 + longe*.16, P.pos.z + uz*longe + rz*(SEGUIR.ombro + A*SEGUIR.ombroAltura));
+  // olha para um ponto entre o meu Pokémon e o rival (o rival fica no meio da tela, eu embaixo)
+  const k = THREE.MathUtils.clamp(SEGUIR.olharRival*(dist > 2 ? 1 : dist/2), 0, .6);
+  _cm.set(P.pos.x + (Q.pos.x - P.pos.x)*k, yP*.9 + A*.62 + (Q.y + Q.altura*.5 - (P.y + A*.5))*k*.6, P.pos.z + (Q.pos.z - P.pos.z)*k);
+  // não atravessa a borda do estádio
+  const r = Math.hypot(_cp.x, _cp.z), lim = RAIO_ARENA + 1.2;
+  if (r > lim) { _cp.x *= lim/r; _cp.z *= lim/r; _cp.y += (r - lim)*.5; }
+  if (_cp.y < .8) _cp.y = .8;
+  const kp = 1 - Math.exp(-dt*(JOGO.cineAtiva ? 2 : SEGUIR.suave)), ka = 1 - Math.exp(-dt*(SEGUIR.suave + 3));
+  CAM.pos.lerp(_cp, kp); CAM.alvo.lerp(_cm, ka);
+}
 function atualizarCamera(dt){
-  const P = lutador(0), Q = lutador(1);
+  let P = lutador(0), Q = lutador(1);
   if (!P || !Q) return;
+  const th = usarCameraSeguir() ? timeHumanoUnico() : -1;
+  if (th >= 0) { if (th === 1) { const x = P; P = Q; Q = x; } CAM.zoom = Math.max(0, CAM.zoom - dt*2.5); alvoCameraSeguir(dt, P, Q); }
+  else {
+  CAM.yawSeg = undefined;
   // ----- câmera de combate -----
   const a = P.pos, b = Q.pos;
   const dx = b.x - a.x, dz = b.z - a.z, dist = Math.max(.1, Math.hypot(dx, dz));
@@ -40,6 +76,7 @@ function atualizarCamera(dt){
   if (r > lim) { _cp.x *= lim/r; _cp.z *= lim/r; _cp.y += (r - lim)*.6; }
   const k = 1 - Math.exp(-dt*(JOGO.cineAtiva ? 2 : 5));
   CAM.pos.lerp(_cp, k); CAM.alvo.lerp(_cm, 1 - Math.exp(-dt*7));
+  }
 
   // ----- mistura com a cinemática -----
   CAM.mistura += ((CAM.cine ? 1 : 0) - CAM.mistura)*(1 - Math.exp(-dt*(CAM.cine ? 6 : 3)));
@@ -61,7 +98,7 @@ function zoomImpacto(forca = 1){ CAM.zoom = Math.min(1, CAM.zoom + forca); }
 // posiciona a câmera instantaneamente (início da luta)
 function cameraInicial(){
   const P = lutador(0), Q = lutador(1); if (!P || !Q) return;
-  CAM.lado = 1; CAM.cine = null; CAM.mistura = 0;
+  CAM.lado = 1; CAM.cine = null; CAM.mistura = 0; CAM.yawSeg = undefined;
   CAM.pos.set(22, 9, 6); CAM.alvo.set(0, 1.5, 0);
   for (let i = 0; i < 60; i++) atualizarCamera(1/30);
 }

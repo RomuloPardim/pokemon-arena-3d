@@ -184,7 +184,8 @@ function montarConfig(){
   seg('#segVib', 'vibracao', null, v => v === 'true'); seg('#segSom', 'som', v => { somLigado = v; }, v => v === 'true');
   seg('#segMus', 'musica', v => tocarMusica(v && EM_BATALHA()), v => v === 'true');
   seg('#segP2', 'p2Teclado', null, v => v === 'true');
-  seg('#segVisual', 'visual', v => guardar.set('visualV18', v));   // vale a partir da próxima luta
+  seg('#segVisual', 'visual', v => guardar.set('visualV18', v));
+  seg('#segCamera', 'camera');   // vale a partir da próxima luta
   seg('#segRetratos', 'retratos', () => {            // troca todos os retratos já desenhados
     document.querySelectorAll('img.retr').forEach(im => { delete im.dataset.caiu; im.src = RETRATO(+im.dataset.id); });
   });

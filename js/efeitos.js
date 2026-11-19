@@ -394,11 +394,12 @@ function feixe(tipo, de, ate, largura = .5, dur = .45){
     boca.scale.setScalar(largura*3.5*w); ponta.scale.setScalar(largura*4.5*w*(1 + Math.random()*.3)); boca.material.opacity = ponta.material.opacity = .55*w;
     // partículas ao longo do feixe
     if (Math.random() < .9) { const p = de.clone().lerp(ate, Math.random()); soltar(tipo, p.x, p.y, p.z, 1, 2.5, .4, .4); }
+    if (typeof fluxoFeixe === 'function') fluxoFeixe(tipo, de, ate, largura, w);          // V20: energia correndo pelo raio
     if (Math.random() < .5) soltar(tipo, ate.x, ate.y, ate.z, 2, 5, .45, .45);
     if (k >= 1) { cena.remove(boca); cena.remove(ponta); boca.material.dispose(); ponta.material.dispose(); for (const h of helices) h.liberar();
       if (typeof impactoVFX === 'function' && QUAL.particulas > .45) impactoVFX(tipo, ate.x, ate.y, ate.z, largura*1.6); }
   });
-  if (typeof impactoVFX === 'function' && QUAL.particulas > .45) setTimeout(() => impactoVFX(tipo, ate.x, ate.y, ate.z, largura*2), 60);
+  if (typeof impactoVFX === 'function' && QUAL.particulas > .45) setTimeout(() => { impactoVFX(tipo, ate.x, ate.y, ate.z, largura*2); if (typeof impactoEnfeitado === 'function') impactoEnfeitado(tipo, ate.x, ate.y, ate.z, largura*1.6); }, 60);
   // raio elétrico: além do feixe, vários relâmpagos tremendo
   if (tipo === 'electric') for (let i = 0; i < 5; i++) setTimeout(() => zigueZague(de, ate, e.c1, .1), i*60);
 }
@@ -677,6 +678,7 @@ function raioRamificado(a, b, cor, nivel = 3, dur = .22){
 }
 /* ----- Carga antes de um golpe especial (a "preparação") ----- */
 function cargaGolpe(L, tipo, dur){
+  if (typeof cargaBrilhante === 'function') cargaBrilhante(L, tipo, dur);      // V20: brilho na boca + purpurina sendo puxada
   const e = estilo(tipo), o = new THREE.Object3D();
   const anel = decalque('runa', e.c1, .5); anel.position.set(L.pos.x, .08, L.pos.z); cena.add(anel);
   efeito(o, dur, (ef, k) => {

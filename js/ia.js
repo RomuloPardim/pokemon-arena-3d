@@ -38,6 +38,8 @@ function entradaIA(L, dt, comportamento){
     for (const a of ['ataque','pulo','esquiva']) solta(a);
     return E;
   }
+  // ----- V20: quem voa às vezes levanta voo (mais quando está longe) -----
+  if (podeVoar(L) && !L.noAr && Math.random() < dt*(dist > 6 ? .35 : .12)*(.5 + D.tecnica)) iniciarVoo(L);
   // ----- defesa: rival atacando perto ou projétil vindo -----
   const ameaça = (A.combo || A.carga || (A.ataque && A.ataque.t < .5) || A.dash) && dist < 4.5;
   if (ameaça && ai.guardaT <= 0 && Math.random() < D.guarda*dt*9) ai.guardaT = rnd(.35, .8);
