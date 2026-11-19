@@ -93,7 +93,7 @@ Confira alguns momentos reais de combate, golpes especiais e finalizações nas 
 
 ### Online
 
-Se o projeto estiver publicado (por exemplo, no Netlify ou no GitHub Pages), é só abrir o link no navegador.
+O projeto está publicado no Netlify e no GitHub Pages, é só abrir o link no navegador.
 
 ### No seu computador
 
