@@ -432,11 +432,14 @@ function perigoEm(x, z){
 
 function redimensionar(){
   const w = window.innerWidth, h = window.innerHeight;
-  renderer.setSize(w, h); camera.aspect = w/h;
+  renderer.setSize(w, h, false); camera.aspect = w/h;     // false: o CSS (100%) cuida do tamanho na tela
   camera.fov = w < h ? 72 : 52;           // celular em pé: campo de visão maior
   camera.userData.fov0 = camera.fov;
   camera.updateProjectionMatrix();
   if (typeof ajustarTamanhoPos === 'function') ajustarTamanhoPos();
 }
 window.addEventListener('resize', redimensionar);
+// a área visível muda quando a barra do navegador some/aparece; ao girar, o tamanho final chega um pouco depois
+if (window.visualViewport) visualViewport.addEventListener('resize', redimensionar);
+window.addEventListener('orientationchange', () => setTimeout(redimensionar, 300));
 redimensionar();

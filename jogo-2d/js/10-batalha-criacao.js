@@ -56,6 +56,8 @@ function resize(){
   cv.width = VW*DPR; cv.height = VH*DPR;
 }
 addEventListener('resize', resize); resize();
+if (window.visualViewport) visualViewport.addEventListener('resize', resize);
+addEventListener('orientationchange', () => setTimeout(resize, 300));
 const FX_LEVE = () => S.fx === 'leve';
 
 /* ----- Sprites andando (PMD Sprite Collab) ----- */
