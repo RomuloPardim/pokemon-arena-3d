@@ -169,7 +169,6 @@ joyZona.addEventListener('pointermove', e => {
 for (const ev of ['pointerup','pointercancel','lostpointercapture']) joyZona.addEventListener(ev, soltarAnalogico);
 // o soltar também é ouvido na página inteira, caso escape do analógico
 for (const ev of ['pointerup','pointercancel']) document.addEventListener(ev, soltarAnalogico);
-for (const ev of ['pointerup','pointercancel','lostpointercapture']) joyZona.addEventListener(ev, soltarAnalogico);
 function ligarBotaoToque(el){
   const acao = el.dataset.acao;
   const ativos = new Set();

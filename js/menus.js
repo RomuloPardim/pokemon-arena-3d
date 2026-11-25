@@ -9,12 +9,55 @@ function mostrarTela(id){
   if (t && !t.dataset.navPropria) setTimeout(() => moverFoco(t, ''), 30);
 }
 
-/* ----- Tela inicial ----- */
+/* ----- Tela inicial: blocos coloridos (cada um é um modo) ----- */
+const ICONES_MENU = {
+  boneco: '<svg viewBox="0 0 64 64"><circle cx="32" cy="12" r="8"/><rect x="28" y="20" width="8" height="30" rx="3"/><rect x="12" y="26" width="40" height="7" rx="3"/><rect x="22" y="50" width="20" height="6" rx="3"/></svg>',
+  trofeu: '<svg viewBox="0 0 64 64"><path d="M18 8h28v12a14 14 0 0 1-28 0z"/><path d="M18 12H8v4a10 10 0 0 0 10 10M46 12h10v4a10 10 0 0 1-10 10" fill="none" stroke="currentColor" stroke-width="4"/><rect x="29" y="33" width="6" height="12"/><rect x="20" y="45" width="24" height="7" rx="2"/></svg>',
+  dado: '<svg viewBox="0 0 64 64"><rect x="10" y="10" width="44" height="44" rx="9"/><g fill="#0004"><circle cx="22" cy="22" r="4.5"/><circle cx="42" cy="22" r="4.5"/><circle cx="32" cy="32" r="4.5"/><circle cx="22" cy="42" r="4.5"/><circle cx="42" cy="42" r="4.5"/></g></svg>',
+  engrenagem: '<svg viewBox="0 0 64 64"><path d="M27 6h10l2 8 6 3 7-4 7 7-4 7 3 6 8 2v10l-8 2-3 6 4 7-7 7-7-4-6 3-2 8H27l-2-8-6-3-7 4-7-7 4-7-3-6-8-2V27l8-2 3-6-4-7 7-7 7 4 6-3z"/><circle cx="32" cy="32" r="9" fill="#0005"/></svg>',
+  controle: '<svg viewBox="0 0 64 64"><path d="M14 20h36a10 10 0 0 1 10 10l2 14a7 7 0 0 1-12 5l-6-7H20l-6 7a7 7 0 0 1-12-5l2-14a10 10 0 0 1 10-10z"/><g fill="#0005"><rect x="15" y="27" width="4" height="12"/><rect x="11" y="31" width="12" height="4"/><circle cx="44" cy="29" r="3"/><circle cx="50" cy="35" r="3"/></g></svg>'
+};
+const BLOCOS_MENU = [
+  { id: 'cpu', cls: 'mnCombate', nome: 'COMBATE', sub: 'Você contra a CPU', arte: [9, 94] },
+  { id: 'versus', cls: 'mnVersus', nome: 'VERSUS', sub: 'Jogador 1 contra Jogador 2', arte: [6, 25], opcoes: [['versus', '1 luta'], ['md3', 'Melhor de 3'], ['md5', 'Melhor de 5']] },
+  { id: 'treino', cls: 'mnTreino', nome: 'TREINO', icone: 'boneco' },
+  { id: 'torneio', cls: 'mnTorneio', nome: 'TORNEIO', icone: 'trofeu' },
+  { id: 'aleatoria', cls: 'mnAleatoria', nome: 'ALEATÓRIA', icone: 'dado' },
+  { id: 'caos', cls: 'mnCaos', nome: 'CAÓTICO', arte: [384] },
+  { id: 'config', cls: 'mnCinza', nome: 'OPÇÕES', icone: 'engrenagem', desc: 'Gráficos, câmera, som, tempo e dificuldade.' },
+  { id: 'controles', cls: 'mnCinza', nome: 'CONTROLES', icone: 'controle', desc: 'Veja e mude as teclas e os botões do controle.' }
+];
+// abre Configurações ou Controles lembrando para onde o "Voltar" leva (menu ou pausa)
+function abrirSubtela(id, volta){
+  const v = document.querySelector('#' + id + ' [data-voltar]'); if (v) v.dataset.voltar = volta;
+  if (id === 'telaControles') desenharControles();
+  mostrarTela(id);
+}
 function montarInicio(){
-  $('#modos').innerHTML = Object.entries(MODOS).map(([id, m]) => `<button class="modo nav" data-modo="${id}"><b>${m.nome}</b><small>${m.desc}</small></button>`).join('');
-  $('#modos').querySelectorAll('.modo').forEach(b => b.onclick = () => { iniciarAudio(); escolherModo(b.dataset.modo); });
-  $('#btnConfig').onclick = () => mostrarTela('telaConfig');
-  $('#btnControles').onclick = () => { desenharControles(); mostrarTela('telaControles'); };
+  const arte = ids => ids.map((id, k) => `<img class="mnArte a${k}" src="${ICONE(id)}" alt="" onerror="this.remove()">`).join('');
+  $('#modos').innerHTML = BLOCOS_MENU.map((b, i) => {
+    const desc = b.desc || MODOS[b.id].desc;
+    const fundo = (b.arte ? arte(b.arte) : '') + (b.icone ? `<span class="mnIcone">${ICONES_MENU[b.icone]}</span>` : '');
+    const texto = `<span class="mnNome">${b.nome}</span>${b.sub ? `<small class="mnSub">${b.sub}</small>` : ''}`;
+    if (b.opcoes) return `<div class="mnBloco ${b.cls}" style="--i:${i}" data-desc="${desc}">${fundo}${texto}
+      <span class="mnChips">${b.opcoes.map(([m, r]) => `<button class="nav mnChip" data-modo="${m}" data-desc="${MODOS[m].desc}">${r}</button>`).join('')}</span></div>`;
+    const idBtn = b.id === 'config' ? ' id="btnConfig"' : b.id === 'controles' ? ' id="btnControles"' : '';
+    return `<button class="mnBloco nav ${b.cls}"${idBtn} style="--i:${i}" data-modo="${b.id}" data-desc="${desc}">${fundo}${texto}</button>`;
+  }).join('');
+  $('#modos').querySelectorAll('[data-modo]').forEach(b => b.onclick = e => {
+    e.stopPropagation(); iniciarAudio();
+    const m = b.dataset.modo;
+    if (m === 'config') abrirSubtela('telaConfig', 'telaInicio');
+    else if (m === 'controles') abrirSubtela('telaControles', 'telaInicio');
+    else escolherModo(m);
+  });
+  // tocar no bloco do Versus (fora dos botões) começa uma luta simples
+  $('#modos').querySelector('.mnVersus').onclick = () => { iniciarAudio(); escolherModo('versus'); };
+  // a barra de baixo descreve o bloco em foco (controle/teclado) ou embaixo do mouse
+  const descrever = e => { const el = e.target.closest && e.target.closest('[data-desc]'); if (el) $('#mnDesc').textContent = el.dataset.desc; };
+  $('#modos').addEventListener('focusin', descrever);
+  $('#modos').addEventListener('mouseover', descrever);
+  $('#mnDesc').textContent = MODOS.cpu.desc;
 }
 function statusControles(){
   const pads = controles();
@@ -73,13 +116,18 @@ function desenharPainelSelecao(t){
   const slots = Array.from({ length: S.tamanhoTime }, (_, i) => { const id = SEL.times[t][i]; return id ? `<div class="slot"><img class="retr" src="${RETRATO(id)}" data-id="${id}" alt="" onerror="retratoErro(this)"><span>${POR_ID[id].nome}</span></div>` : `<div class="slot vazio">${i + 1}</div>`; }).join('');
   const n = t;
   const dica = ctrl === 'jogador' ? `${rotulo(n, 'pulo')} escolher • ${rotulo(n, 'esquiva')} tirar • ${rotulo(n, 'golpe0')} aleatório • ${rotulo(n, 'pausa')} pronto` : 'clique nas cartas para montar a equipe';
-  el.innerHTML = `<h3 style="color:${COR_TIME[t]}">${ctrl === 'jogador' ? 'JOGADOR ' + (t + 1) : disp}<small>${ctrl === 'jogador' ? disp : ''}</small></h3>
+  const tag = ctrl === 'jogador' ? (t + 1) + 'P' : ctrl === 'boneco' ? 'TREINO' : 'CPU';
+  el.className = `selPainel lado${t} ${ctrl === 'jogador' ? 'humano' : 'cpu'} ${SEL.pronto[t] ? 'pronto' : ''}`;
+  el._infoId = null;
+  el.innerHTML = `<div class="spTopo"><span class="spTag">${tag}</span><span class="spCtrl">${ctrl === 'jogador' ? disp : ''}</span>
+      <span class="estado ${SEL.pronto[t] ? 'ok' : ''}">${SEL.pronto[t] ? 'PRONTO!' : 'Escolhendo…'}</span></div>
+    <div class="spInfo"></div>
     <div class="slots">${slots}</div>
-    <div class="estado ${SEL.pronto[t] ? 'ok' : ''}">${SEL.pronto[t] ? 'PRONTO!' : 'Escolhendo…'}</div>
     <div class="acoes"><button data-a="editar" class="${SEL.editando === t ? 'on' : ''}">✎ Editar</button><button data-a="aleatorio">🎲</button><button data-a="limpar">✕</button>
       ${t === 1 && SEL.modo !== 'torneio' && SEL.modo !== 'treino' ? `<button data-a="ctrl">${ctrl === 'jogador' ? '→ CPU' : '→ Jogador 2'}</button>` : ''}
       <button data-a="pronto" class="pri">${SEL.pronto[t] ? 'Desfazer' : 'Pronto'}</button></div>
     <p class="dica">${dica}</p>`;
+  desenharInfoSelecao(t);
   el.querySelectorAll('[data-a]').forEach(b => b.onclick = () => {
     const a = b.dataset.a;
     if (a === 'editar') SEL.editando = t;
@@ -98,7 +146,19 @@ function desenharCursores(){
     c.classList.toggle('noTime1', SEL.times[1].includes(POKEMON[i].id));
   });
   // vitrine: o Pokémon que cada cursor está olhando
-  for (const t of [0, 1]) { const id = SEL.times[t].length && SEL.pronto[t] ? SEL.times[t][0] : POKEMON[SEL.cursor[t]].id; mostrarNaVitrine(t, SEL.ctrl[t] === 'nenhum' ? null : id); }
+  for (const t of [0, 1]) { const id = SEL.times[t].length && SEL.pronto[t] ? SEL.times[t][0] : POKEMON[SEL.cursor[t]].id; mostrarNaVitrine(t, SEL.ctrl[t] === 'nenhum' ? null : id); desenharInfoSelecao(t); }
+}
+// a parte de cima do painel: arte grande, nome, tipos, estilo e golpes do Pokémon em foco
+function desenharInfoSelecao(t){
+  const el = $('#selJ' + t), info = el && el.querySelector('.spInfo'); if (!info) return;
+  const id = SEL.times[t].length && SEL.pronto[t] ? SEL.times[t][0] : POKEMON[SEL.cursor[t]].id;
+  if (el._infoId === id) return;
+  el._infoId = id;
+  const p = POR_ID[id];
+  info.innerHTML = `<img class="spArte" src="${ICONE(id)}" alt="" onerror="this.style.visibility='hidden'">
+    <div class="spTexto"><small>${ESTILOS_LUTA[p.estilo].nome}${p.lendario ? ' · Lendário' : ''}</small><h3>${p.nome}</h3>
+      <div class="tipos">${p.tipos.map(tp => `<span style="background:${TYPES[tp][1]}">${TYPES[tp][0]}</span>`).join('')}</div>
+      <ul class="spGolpes">${p.golpes.map(g => `<li style="--c:${TYPES[g.tipo][1]}">${g.nome}</li>`).join('')}</ul></div>`;
 }
 function adicionarAoTime(t, i){
   if (SEL.pronto[t] || SEL.ctrl[t] === 'nenhum') return;
@@ -216,14 +276,41 @@ function desenharControles(){
 }
 
 /* ----- Pausa e resultado ----- */
+const DICAS_PAUSA = ['Ataque várias vezes para fazer um <b>combo</b>.', 'Segure Ataque para um <b>golpe carregado</b>.', 'Esquiva sem direção: <b>persegue</b> o adversário.',
+  'Guarda logo antes do golpe: <b>contra-ataque</b>.', 'Guarda quando apanha: <b>substituição</b>.', 'Pular no chão: <b>levanta rápido</b>.'];
 function pausar(sim){
   if (JOGO.fim && sim) return;
-  JOGO.pausado = sim; $('#pausa').classList.toggle('hidden', !sim);
-  if (sim) setTimeout(() => moverFoco($('#pausa'), ''), 30);
+  JOGO.pausado = sim;
+  if (!sim) ['#telaConfig', '#telaControles'].forEach(s => $(s).classList.add('hidden'));   // despausou com Opções aberto
+  $('#pausa').classList.toggle('hidden', !sim);
+  if (sim) { montarPainelPausa(); setTimeout(() => moverFoco($('#pausa'), ''), 30); }
+}
+// painel da direita: os dois times com a vida de cada Pokémon e os golpes do seu
+function montarPainelPausa(){
+  const P = PARTIDA, M = P && MODOS[P.modo];
+  $('#psModo').textContent = M ? M.nome + (P.precisa > 1 ? ` · Rodada ${P.rodada} · ${P.vitorias[0]} × ${P.vitorias[1]}` : '') : '';
+  $('#psArena').textContent = P && MAPAS[P.mapa] ? '· ' + MAPAS[P.mapa].nome : '';
+  $('#psTimes').innerHTML = [0, 1].map(t => `<div class="psTime" style="--t:${COR_TIME[t]}"><b>${nomeDoTime(t)}</b>` +
+    JOGO.times[t].map((m, i) => {
+      const f = Math.max(0, m.hp/m.hpMax), cor = f > .5 ? '#3ddc84' : f > .2 ? '#ffc93a' : '#ff4a5a';
+      return `<div class="psLinha ${m.vivo ? '' : 'caido'} ${i === JOGO.ativo[t] ? 'ativo' : ''}"><img class="retr" src="${RETRATO(m.p.id)}" data-id="${m.p.id}" alt="" onerror="retratoErro(this)">
+        <span>${m.p.nome}</span><i><em style="width:${f*100}%;background:${cor}"></em></i><small>${Math.round(f*100)}%</small></div>`;
+    }).join('') + '</div>').join('');
+  const L = lutador(0);
+  $('#psNomeGolpes').textContent = L ? L.p.nome.toUpperCase() : '';
+  $('#psGolpes').innerHTML = L ? L.p.golpes.map(g => `<li style="--c:${TYPES[g.tipo][1]}">${g.nome}<small>${TYPES[g.tipo][0]}</small></li>`).join('') : '';
+  $('#psDica').innerHTML = 'Dica: ' + DICAS_PAUSA[Math.floor(Math.random()*DICAS_PAUSA.length)];
 }
 function montarPausaResultado(){
   $('#btnContinuar').onclick = () => pausar(false);
-  $('#btnSairPausa').onclick = voltarAoMenu;
+  $('#btnSairPausa').onclick = () => {   // sair pede dois toques, para não perder a luta sem querer
+    const b = $('#btnSairPausa'), rotulo = b.querySelector('b');
+    if (b.dataset.confirmar) { delete b.dataset.confirmar; rotulo.textContent = 'Sair da luta'; voltarAoMenu(); return; }
+    b.dataset.confirmar = '1'; rotulo.textContent = 'Sair? Aperte de novo';
+    setTimeout(() => { delete b.dataset.confirmar; rotulo.textContent = 'Sair da luta'; }, 3000);
+  };
+  $('#btnPsOpcoes').onclick = () => abrirSubtela('telaConfig', 'pausa');
+  $('#btnPsControles').onclick = () => abrirSubtela('telaControles', 'pausa');
   $('#btnMenu').onclick = voltarAoMenu;
   $('#btnRevanche').onclick = async () => { $('#resultado').classList.add('hidden'); const cfg = { ...PARTIDA }; limparLuta(); await comecarPartida(cfg); };
   $('#btnContinuarTorneio').onclick = () => { $('#resultado').classList.add('hidden'); limparLuta(); mostrarChave(); };

@@ -166,7 +166,7 @@ function passoVitrine(dt){
     V.surgir = Math.min(1, (V.surgir || 0) + dt*3); V.raiz.scale.setScalar(.01 + V.surgir*.99);
     if (sel) { V.raiz.position.set(l ? 3.2 : -3.2, 0, 0); V.raiz.rotation.y = l ? -1.1 : 1.1; }
     else { V.raiz.position.set(0, 0, 0); V.raiz.rotation.y = vitrineAng*2; }
-    V.raiz.visible = sel || l === 0;
+    V.raiz.visible = !sel && l === 0;   // na seleção, a arte aparece nos painéis 1P / CPU
     animarInstancia(V, dt, { vel: 0, voa: !!POR_ID[V.id]?.voa });
   }
   BRILHO.atualizar(dt); FUMACA.atualizar(dt); atualizarEfeitos(dt); atualizarLuzes(dt); ambiente(dt);
