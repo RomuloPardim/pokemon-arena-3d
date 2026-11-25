@@ -20,3 +20,7 @@ btnTelaCheia.onclick = () => {
   }).catch(() => {});
 };
 document.addEventListener('fullscreenchange', () => { btnTelaCheia.textContent = emTelaCheia() ? 'Sair da tela cheia' : 'Tela cheia'; });
+/* Aplicativo (PWA): registra o service worker com a versão do jogo */
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  navigator.serviceWorker.register('sw.js?v=' + VERSAO).catch(() => {});
+}
