@@ -104,6 +104,8 @@ function vibrar(n, forca, ms){
   if (!S.vibracao) return;
   const pad = controleDoJogador(n);
   if (pad && pad.vibrationActuator) pad.vibrationActuator.playEffect('dual-rumble', { duration: ms, strongMagnitude: forca, weakMagnitude: forca*.6 }).catch(() => {});
+  // celular (Android): vibra o aparelho quando o jogador 1 joga pelo toque
+  else if (n === 0 && TOQUE.ativo && navigator.vibrate) navigator.vibrate(Math.max(15, Math.round(ms*forca)));
 }
 
 /* ----- Remapear: espera a próxima tecla ou botão ----- */
