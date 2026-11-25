@@ -151,12 +151,22 @@ function soltarAnalogico(e){
   joyZona.classList.remove('pressionado');
 }
 joyZona.addEventListener('pointerdown', e => {
-  if (joyId !== null || !EM_BATALHA()) return;
+  if (!EM_BATALHA()) return;
+  // se um dedo "fantasma" ficou preso no analógico, o toque novo assume o lugar dele
+  if (joyId !== null && joyId !== e.pointerId) { try { joyZona.releasePointerCapture(joyId); } catch (erro) {} }
   e.preventDefault(); TOQUE.ativo = true; iniciarAudio();
-  joyId = e.pointerId; joyZona.setPointerCapture(e.pointerId);
+  joyId = e.pointerId; try { joyZona.setPointerCapture(e.pointerId); } catch (erro) {}   // falha se o dedo já saiu
   joyZona.classList.add('pressionado'); moverAnalogico(e);
 });
-joyZona.addEventListener('pointermove', e => { if (e.pointerId === joyId) { e.preventDefault(); moverAnalogico(e); } });
+joyZona.addEventListener('pointermove', e => {
+  if (e.pointerId !== joyId) return;
+  // e.buttons === 0: o dedo não está mais encostado (o aviso de soltar se perdeu)
+  if (e.buttons === 0) { soltarAnalogico(e); return; }
+  e.preventDefault(); moverAnalogico(e);
+});
+for (const ev of ['pointerup','pointercancel','lostpointercapture']) joyZona.addEventListener(ev, soltarAnalogico);
+// o soltar também é ouvido na página inteira, caso escape do analógico
+for (const ev of ['pointerup','pointercancel']) document.addEventListener(ev, soltarAnalogico);
 for (const ev of ['pointerup','pointercancel','lostpointercapture']) joyZona.addEventListener(ev, soltarAnalogico);
 function ligarBotaoToque(el){
   const acao = el.dataset.acao;
@@ -175,15 +185,19 @@ function ligarBotaoToque(el){
     if (!ativos.size) { TOQUE.agora.delete(acao); el.classList.remove('ativo'); }
   };
   for (const ev of ['pointerup','pointercancel','lostpointercapture']) el.addEventListener(ev, terminar);
+  el._esquecerDedos = () => ativos.clear();   // usado pelo limparToqueMobile
 }
 function limparToqueMobile(){
   TOQUE.x = TOQUE.y = 0; TOQUE.agora.clear(); joyId = null;
   joyZona.classList.remove('pressionado');
   joyPino.style.transform = 'translate(-50%, -50%)';
-  document.querySelectorAll('#toque button').forEach(el => el.classList.remove('ativo'));
+  document.querySelectorAll('#toque button').forEach(el => { el.classList.remove('ativo'); if (el._esquecerDedos) el._esquecerDedos(); });
 }
 addEventListener('blur', limparToqueMobile);
 addEventListener('pagehide', limparToqueMobile);
+// rede de segurança: se nenhum dedo está na tela, nada pode ficar "apertado"
+document.addEventListener('touchend', e => { if (e.touches.length === 0) limparToqueMobile(); }, { passive: true });
+document.addEventListener('touchcancel', e => { if (e.touches.length === 0) limparToqueMobile(); }, { passive: true });
 
 /* ----- Navegar nos menus com controle/teclado -----
    Elementos com a classe "nav" recebem foco; o analógico/setas move o foco para o mais próximo naquela direção;
